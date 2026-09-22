@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+model_tests/
+rag_cache/
+models/
+results/

@@ -1,0 +1,8 @@
+datasets==3.6.0
+faiss-cpu==1.13.2
+numpy==1.26.4
+ray==2.54.0
+rdkit==2025.9.5
+torch==2.9.1+cu128
+tqdm==4.67.3
+vllm==0.16.0
