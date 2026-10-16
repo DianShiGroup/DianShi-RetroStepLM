@@ -1,0 +1,6 @@
+# Additional dependencies for local MLP single-step inference.
+-r requirements.txt
+torch==2.6.0
+tqdm>=4.64.0
+-e ../packages/rdchiral
+-e ../packages/mlp_retrosyn
