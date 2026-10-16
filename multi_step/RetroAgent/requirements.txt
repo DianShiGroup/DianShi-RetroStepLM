@@ -1,0 +1,25 @@
+# Core dependencies (shared across all components)
+# NOTE: serving the planner and the step model is done with vLLM (>= 0.18; we
+# validated 0.26) on the GPU machine -- not installed by this file. The serve
+# scripts only need `vllm` on PATH.
+numpy
+rdkit
+rdchiral
+rxnmapper
+tqdm
+torch
+pandas
+pyarrow
+uvicorn
+fastapi
+pydantic
+aiohttp
+httpx
+requests
+chz
+transformers
+docstring-parser
+networkx
+pillow
+wandb
+pyyaml
