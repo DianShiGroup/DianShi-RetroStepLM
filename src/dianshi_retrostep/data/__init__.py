@@ -1,1 +1,1 @@
-"""Evaluation dataset construction and ChemRAG retrieval."""
+"""Evaluation dataset construction."""

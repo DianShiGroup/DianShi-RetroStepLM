@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build all local evaluation datasets under ``model_tests``.
+"""Build the sl_cot evaluation datasets under ``model_tests``.
 
 The directory and file names intentionally match the established
 ``model_tests`` layout.  All repository paths are derived from this file, so
@@ -10,10 +10,8 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import shutil
-import subprocess
 import sys
 import time
 from dataclasses import dataclass
@@ -26,8 +24,6 @@ PACKAGE_DIR = Path(__file__).resolve().parents[1]
 ROOT = PACKAGE_DIR.parents[1]
 PROMPT_DIR = PACKAGE_DIR / "prompts"
 OUT_ROOT = ROOT / "model_tests"
-RAG_CACHE = ROOT / "rag_cache"
-RAG_SCRIPT = PACKAGE_DIR / "data" / "insert_rag_into_test.py"
 
 SOURCE_SPECS = (
     ("test_in", "test", ROOT / "datasets/DianShi-RxnStep-dataset/DianShi-RxnStep-Test-IN.jsonl"),
@@ -39,21 +35,11 @@ SOURCE_SPECS = (
 )
 
 PROMPTS = {
-    "s2s": PROMPT_DIR / "prompt_sft_s2s.txt",
-    "s2s_rag": PROMPT_DIR / "prompt_enhancer_s2s_rag.txt",
     "sl_cot": PROMPT_DIR / "prompt_sft_sl_cot.txt",
-    "sl_cot_rag": PROMPT_DIR / "prompt_sft_sl_cot_rag.txt",
 }
 
 SPLIT_PREFIX = {"test": "testset", "val": "validationset"}
-SAFE_DB_NAME = re.compile(r"^[A-Za-z0-9_]+$")
 FORMAT_KEY = re.compile(r"\{(\w+)")
-
-
-@dataclass(frozen=True)
-class Database:
-    name: str
-    path: Path
 
 
 @dataclass(frozen=True)
@@ -62,7 +48,6 @@ class Variant:
     subfolder: str
     suffix: str
     prompt_key: str
-    db: Database | None = None
 
 
 @dataclass(frozen=True)
@@ -109,29 +94,13 @@ class Unit:
     def prompt(self) -> Path:
         return PROMPTS[self.variant.prompt_key]
 
-    @property
-    def rag_input(self) -> Path:
-        if self.variant.db is None:
-            return self.source
-        return (
-            RAG_CACHE
-            / self.variant.db.name
-            / f"{self.dataset}__{self.split}_with_rag.jsonl"
-        )
-
     def __str__(self) -> str:
         return f"{self.dataset}/{self.variant.subfolder}/{self.name}"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build model-test JSONL and Hugging Face cached datasets."
-    )
-    parser.add_argument(
-        "--config",
-        type=Path,
-        default=Path("configs/model_test_config.json"),
-        help="Configuration file, relative to the repository root by default.",
+        description="Build sl_cot model-test JSONL and Hugging Face cached datasets."
     )
     parser.add_argument(
         "--datasets",
@@ -139,35 +108,16 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated dataset names: test_in,test_out,uspto_50k.",
     )
     parser.add_argument(
-        "--variants",
-        default="",
-        help="Comma-separated variant keys. The default builds every variant.",
-    )
-    parser.add_argument(
         "--splits", default="", help="Comma-separated splits: test,val."
     )
     parser.add_argument("--force", action="store_true", help="Rebuild existing outputs.")
     parser.add_argument("--dry-run", action="store_true", help="Print the build plan only.")
-    parser.add_argument("--num-workers", type=int, default=4)
-    parser.add_argument("--retrieve-topk", type=int, default=10)
-    parser.add_argument("--bottom-k", type=int, default=0)
-    parser.add_argument("--faiss-candidates", type=int, default=200)
-    parser.add_argument("--prompt-rag-topk", type=int, default=5)
-    parser.add_argument(
-        "--skip-rag",
-        action="store_true",
-        help="Reuse existing files under rag_cache instead of running retrieval.",
-    )
     return parser.parse_args()
 
 
 def csv_values(value: str) -> list[str] | None:
     values = [part.strip() for part in value.split(",") if part.strip()]
     return values or None
-
-
-def resolve_from_root(path: Path) -> Path:
-    return path if path.is_absolute() else ROOT / path
 
 
 def display_path(path: Path) -> str:
@@ -178,77 +128,8 @@ def display_path(path: Path) -> str:
         return str(path)
 
 
-def load_databases(config_path: Path) -> list[Database]:
-    path = resolve_from_root(config_path)
-    if not path.is_file():
-        raise FileNotFoundError(f"Configuration file not found: {path}")
-    with path.open("r", encoding="utf-8") as handle:
-        config = json.load(handle)
-
-    if "db" not in config:
-        raise ValueError("The required 'db' field is missing from the configuration.")
-    entries = config["db"]
-    if not isinstance(entries, list) or not entries:
-        raise ValueError(
-            "The required 'db' field must be a non-empty list. "
-            "See README.md for the supported format."
-        )
-
-    databases: list[Database] = []
-    seen: set[str] = set()
-    for index, entry in enumerate(entries):
-        if not isinstance(entry, dict):
-            raise TypeError(f"db[{index}] must be an object with name and path fields.")
-        name = entry.get("name")
-        raw_path = entry.get("path")
-        if not isinstance(name, str) or not SAFE_DB_NAME.fullmatch(name):
-            raise ValueError(
-                f"db[{index}].name must contain only ASCII letters, digits, and underscores."
-            )
-        if name in seen:
-            raise ValueError(f"Duplicate database name: {name}")
-        if not isinstance(raw_path, str) or not raw_path.strip():
-            raise ValueError(f"db[{index}].path is required.")
-        configured_path = Path(raw_path)
-        if configured_path.is_absolute():
-            raise ValueError(
-                f"db[{index}].path must be relative to the repository root."
-            )
-        db_path = resolve_from_root(configured_path)
-        if not db_path.is_dir():
-            raise FileNotFoundError(f"Database directory not found: {db_path}")
-        required_files = (
-            "config.json",
-            "metadata.jsonl",
-            "product_fps.npy",
-            "line_offsets.npy",
-            "faiss_product.index",
-        )
-        missing_files = [name for name in required_files if not (db_path / name).is_file()]
-        if missing_files:
-            raise FileNotFoundError(
-                f"Database {name!r} is missing required files: {missing_files}"
-            )
-        databases.append(Database(name=name, path=db_path))
-        seen.add(name)
-    return databases
-
-
-def make_variants(databases: list[Database]) -> dict[str, Variant]:
-    variants = {
-        "s2s": Variant("s2s", "s2s", "s2s", "s2s"),
-        "sl_cot": Variant("sl_cot", "sl_cot", "sl_cot", "sl_cot"),
-    }
-    for db in databases:
-        s2s_key = f"s2s_rag_{db.name}"
-        cot_key = f"sl_cot_rag_{db.name}"
-        variants[s2s_key] = Variant(
-            s2s_key, "s2s", f"s2s_{db.name}_rag", "s2s_rag", db
-        )
-        variants[cot_key] = Variant(
-            cot_key, "sl_cot_rag", f"sl_cot_{db.name}_rag", "sl_cot_rag", db
-        )
-    return variants
+def make_variants() -> dict[str, Variant]:
+    return {"sl_cot": Variant("sl_cot", "sl_cot", "sl_cot", "sl_cot")}
 
 
 def discover_sources() -> dict[str, dict[str, Path]]:
@@ -269,16 +150,12 @@ def make_units(
     sources: dict[str, dict[str, Path]],
     variants: dict[str, Variant],
     datasets_filter: list[str] | None,
-    variants_filter: list[str] | None,
     splits_filter: list[str] | None,
 ) -> list[Unit]:
     unknown_datasets = sorted(set(datasets_filter or ()) - set(sources))
-    unknown_variants = sorted(set(variants_filter or ()) - set(variants))
     unknown_splits = sorted(set(splits_filter or ()) - set(SPLIT_PREFIX))
     if unknown_datasets:
         raise ValueError(f"Unknown datasets: {unknown_datasets}")
-    if unknown_variants:
-        raise ValueError(f"Unknown variants: {unknown_variants}")
     if unknown_splits:
         raise ValueError(f"Unknown splits: {unknown_splits}")
 
@@ -289,70 +166,9 @@ def make_units(
         for split, source in by_split.items():
             if splits_filter and split not in splits_filter:
                 continue
-            for key, variant in variants.items():
-                if variants_filter and key not in variants_filter:
-                    continue
+            for variant in variants.values():
                 units.append(Unit(dataset, split, source, variant))
     return units
-
-
-def relative_symlink(target: Path, link: Path) -> None:
-    if link.is_symlink() or link.exists():
-        link.unlink()
-    link.symlink_to(os.path.relpath(target, link.parent))
-
-
-def run_rag(
-    units: list[Unit],
-    num_workers: int,
-    retrieve_topk: int,
-    bottom_k: int,
-    faiss_candidates: int,
-    force: bool,
-) -> None:
-    databases = {unit.variant.db for unit in units if unit.variant.db is not None}
-    for db in sorted(databases, key=lambda item: item.name):
-        group = [unit for unit in units if unit.variant.db == db]
-        cache_dir = RAG_CACHE / db.name
-        cache_dir.mkdir(parents=True, exist_ok=True)
-
-        unique_sources = {(unit.dataset, unit.split): unit.source for unit in group}
-        pending: list[Path] = []
-        for (dataset, split), source in sorted(unique_sources.items()):
-            link = cache_dir / f"{dataset}__{split}.jsonl"
-            output = link.with_name(f"{link.stem}_with_rag.jsonl")
-            if output.exists() and not force:
-                print(f"[rag:{db.name}] Reusing {output.relative_to(ROOT)}")
-                continue
-            relative_symlink(source, link)
-            pending.append(link)
-
-        if not pending:
-            continue
-        command = [
-            sys.executable,
-            str(RAG_SCRIPT),
-            "--input-jsonl",
-            ",".join(str(path) for path in pending),
-            "--db-dir",
-            str(db.path),
-            "--num-workers",
-            str(num_workers),
-            "--top-k",
-            str(retrieve_topk),
-            "--bottom-k",
-            str(bottom_k),
-            "--faiss-candidates",
-            str(faiss_candidates),
-            "--suffix",
-            "_with_rag",
-        ]
-        print(f"[rag:{db.name}] Retrieving for {len(pending)} source file(s).")
-        subprocess.run(command, check=True, cwd=ROOT)
-        for source in pending:
-            output = source.with_name(f"{source.stem}_with_rag.jsonl")
-            if not output.is_file():
-                raise RuntimeError(f"Expected RAG output was not created: {output}")
 
 
 def record_payload(record: dict) -> dict:
@@ -386,39 +202,8 @@ def get_reaction_template(value: dict) -> str:
     return str(local.get("rxn_temp", "")) if isinstance(local, dict) else ""
 
 
-def rag_examples(payload: dict, limit: int, pair_only: bool) -> str:
-    examples = payload.get("prepared_trained_for_rag_sft", [])
-    if not isinstance(examples, list):
-        return ""
-    rendered = []
-    for index, example in enumerate(examples[:limit], 1):
-        if not isinstance(example, dict):
-            continue
-        products = joined(example.get("products"))
-        reactants = joined(example.get("reactants"))
-        lines = [f"Example {index}", f"reactants: {reactants}", f"products: {products}"]
-        if not pair_only:
-            synthons = example.get("synthons_smiles", [])
-            leaving_groups = example.get("leaving_groups", [])
-            if not isinstance(synthons, list):
-                synthons = [synthons] if synthons else []
-            if not isinstance(leaving_groups, list):
-                leaving_groups = [leaving_groups] if leaving_groups else []
-            lines.extend(
-                (
-                    f"leaving_groups: {json.dumps(leaving_groups, ensure_ascii=False)}",
-                    f"synthons_smiles: {json.dumps(synthons, ensure_ascii=False)}",
-                )
-            )
-        rendered.append("\n".join(lines))
-    return "\n\n".join(rendered)
-
-
-def load_prompt(path: Path, enhancer: bool) -> dict[str, str]:
+def load_prompt(path: Path) -> dict[str, str]:
     text = path.read_text(encoding="utf-8")
-    if enhancer:
-        return {"system": text.strip(), "user": "{products}"}
-
     sections = {"system": "", "user": ""}
     current = None
     buffers: dict[str, list[str]] = {"system": [], "user": []}
@@ -439,7 +224,7 @@ def load_prompt(path: Path, enhancer: bool) -> dict[str, str]:
     return sections
 
 
-def template_values(payload: dict, rag_topk: int, pair_only: bool) -> dict[str, str]:
+def template_values(payload: dict) -> dict[str, str]:
     products = joined(payload.get("products"))
     reactants = joined(payload.get("reactants"))
     if not products or not reactants:
@@ -459,7 +244,6 @@ def template_values(payload: dict, rag_topk: int, pair_only: bool) -> dict[str, 
         "leaving_groups": json.dumps(leaving_groups, ensure_ascii=False),
         "synthons_str": json.dumps(synthons, ensure_ascii=False),
         "leaving_groups_str": json.dumps(leaving_groups, ensure_ascii=False),
-        "rag_examples": rag_examples(payload, rag_topk, pair_only),
         "reaction_template": get_reaction_template(payload),
         "product_bond_str": json.dumps(payload.get("product_bond", []), ensure_ascii=False),
         "reactant_fragments_str": json.dumps(payload.get("reactant_fragments", []), ensure_ascii=False),
@@ -474,9 +258,8 @@ def template_values(payload: dict, rag_topk: int, pair_only: bool) -> dict[str, 
     return values
 
 
-def convert_unit(unit: Unit, rag_topk: int) -> int:
-    enhancer = unit.variant.prompt_key == "s2s_rag"
-    prompt = load_prompt(unit.prompt, enhancer)
+def convert_unit(unit: Unit) -> int:
+    prompt = load_prompt(unit.prompt)
     required = set().union(*(FORMAT_KEY.findall(value) for value in prompt.values()))
 
     unit.jsonl_dir.mkdir(parents=True, exist_ok=True)
@@ -485,7 +268,7 @@ def convert_unit(unit: Unit, rag_topk: int) -> int:
     success = 0
     line_number = 0
     try:
-        with unit.rag_input.open("r", encoding="utf-8") as source, temporary.open(
+        with unit.source.open("r", encoding="utf-8") as source, temporary.open(
             "w", encoding="utf-8"
         ) as destination:
             for line_number, line in enumerate(source, 1):
@@ -493,7 +276,7 @@ def convert_unit(unit: Unit, rag_topk: int) -> int:
                     continue
                 record = json.loads(line)
                 payload = record_payload(record)
-                values = template_values(payload, rag_topk, enhancer)
+                values = template_values(payload)
                 missing = required - set(values)
                 if missing:
                     raise KeyError(f"Prompt keys are unavailable: {sorted(missing)}")
@@ -501,10 +284,6 @@ def convert_unit(unit: Unit, rag_topk: int) -> int:
                     {"role": "system", "content": prompt["system"].format(**values)},
                     {"role": "user", "content": prompt["user"].format(**values)},
                 ]
-                if enhancer:
-                    messages.append(
-                        {"role": "assistant", "content": f"<answer>{values['reactants']}</answer>"}
-                    )
                 sample = {
                     "messages": messages,
                     "metadata": {
@@ -603,44 +382,24 @@ def cache_unit(unit: Unit) -> None:
     cache_jsonl(unit.atomwise_dir, unit.atomwise_cached_dir)
 
 
-def validate_options(args: argparse.Namespace) -> None:
-    numeric = {
-        "--num-workers": args.num_workers,
-        "--retrieve-topk": args.retrieve_topk,
-        "--faiss-candidates": args.faiss_candidates,
-        "--prompt-rag-topk": args.prompt_rag_topk,
-    }
-    for option, value in numeric.items():
-        if value < 1:
-            raise ValueError(f"{option} must be at least 1.")
-    if args.bottom_k < 0:
-        raise ValueError("--bottom-k cannot be negative.")
-
-
 def main() -> int:
     args = parse_args()
     try:
-        validate_options(args)
-        databases = load_databases(args.config)
-        variants = make_variants(databases)
+        variants = make_variants()
         for prompt in PROMPTS.values():
             if not prompt.is_file():
                 raise FileNotFoundError(f"Prompt file not found: {prompt}")
-        if not RAG_SCRIPT.is_file():
-            raise FileNotFoundError(f"RAG helper not found: {RAG_SCRIPT}")
         sources = discover_sources()
         units = make_units(
             sources,
             variants,
             csv_values(args.datasets),
-            csv_values(args.variants),
             csv_values(args.splits),
         )
-    except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+    except (OSError, ValueError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 2
 
-    print(f"[plan] Databases: {[db.name for db in databases]}")
     print(f"[plan] Variants: {list(variants)}")
     print(f"[plan] Units: {len(units)}")
     for unit in units:
@@ -664,35 +423,17 @@ def main() -> int:
                     shutil.rmtree(path)
 
     try:
-        rag_units = [unit for unit in pending if unit.variant.db is not None]
-        if args.skip_rag:
-            missing = [unit.rag_input for unit in rag_units if not unit.rag_input.is_file()]
-            if missing:
-                raise FileNotFoundError(
-                    "--skip-rag was requested, but cached retrieval output is missing: "
-                    + ", ".join(str(path.relative_to(ROOT)) for path in missing)
-                )
-        else:
-            run_rag(
-                rag_units,
-                args.num_workers,
-                args.retrieve_topk,
-                args.bottom_k,
-                args.faiss_candidates,
-                args.force,
-            )
-
         completed = 0
         started = time.time()
         for index, unit in enumerate(pending, 1):
             print(f"[{index}/{len(pending)}] {unit}")
-            convert_unit(unit, args.prompt_rag_topk)
+            convert_unit(unit)
             atomwise_unit(unit)
             cache_unit(unit)
             completed += 1
         print(f"[main] Completed {completed} unit(s) in {time.time() - started:.1f}s.")
         return 0
-    except (OSError, RuntimeError, ValueError, KeyError, subprocess.CalledProcessError) as exc:
+    except (OSError, RuntimeError, ValueError, KeyError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
 
