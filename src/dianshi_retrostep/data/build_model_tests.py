@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build all local evaluation datasets under ``model_tests``.
 
-The directory and file names intentionally match the established NMI
+The directory and file names intentionally match the established
 ``model_tests`` layout.  All repository paths are derived from this file, so
 the project can be moved or downloaded without editing paths in the code.
 """
@@ -19,14 +19,15 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from smiles_atomwise import transform_messages
+from dianshi_retrostep.data.smiles_atomwise import transform_messages
 
 
-ROOT = Path(__file__).resolve().parent
-PROMPT_DIR = ROOT / "prompts" / "nmi"
+PACKAGE_DIR = Path(__file__).resolve().parents[1]
+ROOT = PACKAGE_DIR.parents[1]
+PROMPT_DIR = PACKAGE_DIR / "prompts"
 OUT_ROOT = ROOT / "model_tests"
 RAG_CACHE = ROOT / "rag_cache"
-RAG_SCRIPT = ROOT / "insert_rag_into_test.py"
+RAG_SCRIPT = PACKAGE_DIR / "data" / "insert_rag_into_test.py"
 
 SOURCE_SPECS = (
     ("test_in", "test", ROOT / "datasets/DianShi-RxnStep-dataset/DianShi-RxnStep-Test-IN.jsonl"),
@@ -124,12 +125,12 @@ class Unit:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build NMI model-test JSONL and Hugging Face cached datasets."
+        description="Build model-test JSONL and Hugging Face cached datasets."
     )
     parser.add_argument(
         "--config",
         type=Path,
-        default=Path("model_test_config.json"),
+        default=Path("configs/model_test_config.json"),
         help="Configuration file, relative to the repository root by default.",
     )
     parser.add_argument(

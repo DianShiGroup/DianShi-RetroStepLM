@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd -- "$(dirname -- "$0")"
+cd -- "$(dirname -- "$0")/.."
+export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 MODEL_PATH="${MODEL_PATH:-models/DianShi-RetroStep-Direct}"
@@ -18,7 +19,7 @@ NO_THINKING=1
 OVERWRITE=0
 
 usage() {
-    echo "Usage: ./infer_beam_search.sh [options]"
+    echo "Usage: scripts/infer_beam_search.sh [options]"
     echo
     echo "Options:"
     echo "  --model-path PATH         Local model path or Hugging Face model ID"
@@ -55,7 +56,7 @@ done
 
 if [ ! -d "$CACHED_DATA_PATH" ]; then
     echo "Cached dataset does not exist: $CACHED_DATA_PATH" >&2
-    echo "Build it first with ./build_model_tests.sh." >&2
+    echo "Build it first with scripts/build_model_tests.sh." >&2
     exit 2
 fi
 
@@ -87,10 +88,10 @@ echo "Model: $MODEL_PATH"
 echo "Dataset: $CACHED_DATA_PATH"
 echo "Results: $OUTPUT_PATH"
 
-"$PYTHON_BIN" vllm_beamsearch_infer.py "${INFER_ARGS[@]}"
+"$PYTHON_BIN" -m dianshi_retrostep.inference.vllm_beamsearch_infer "${INFER_ARGS[@]}"
 
 echo
 echo "Beam search completed. Evaluating exact-match accuracy..."
 # EVAL_KS is intentionally split into separate integer arguments.
 # shellcheck disable=SC2086
-"$PYTHON_BIN" eval_retro_beam_topk.py "$OUTPUT_PATH" --ks $EVAL_KS --output-json "$METRICS_PATH"
+"$PYTHON_BIN" -m dianshi_retrostep.evaluation.eval_retro_beam_topk "$OUTPUT_PATH" --ks $EVAL_KS --output-json "$METRICS_PATH"

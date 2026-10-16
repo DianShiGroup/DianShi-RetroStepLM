@@ -2,9 +2,11 @@
 
 The complete installation, database configuration, dataset-building, and output-naming guide is available in README.md. This file describes the beam-search inference and evaluation programs.
 
+Source code lives under src/dianshi_retrostep (data, inference, evaluation, prompts), entry-point scripts under scripts, and configuration under configs. All commands are run from the repository root.
+
 ## Programs
 
-### vllm_beamsearch_infer.py
+### dianshi_retrostep.inference.vllm_beamsearch_infer
 
 This program:
 
@@ -16,7 +18,7 @@ This program:
 
 Required arguments are --model-path, --cached-data-path, and --output-path. GPU count, batch size, maximum generated tokens, beam width, and GPU memory utilization are configurable.
 
-### eval_retro_beam_topk.py
+### dianshi_retrostep.evaluation.eval_retro_beam_topk
 
 This program reads the beam-search JSONL output and reports exact-match Top-k retrosynthesis accuracy. It canonicalizes reference and predicted reactant SMILES with RDKit and treats dot-separated reactant component order as chemically equivalent.
 
@@ -32,7 +34,7 @@ It prints accuracy and diagnostics to the terminal and can optionally save the c
 
 ## Recommended local runner
 
-infer_beam_search.sh runs both programs in sequence: inference first, followed by Top-k evaluation.
+scripts/infer_beam_search.sh runs both programs in sequence: inference first, followed by Top-k evaluation.
 
 Its defaults are:
 
@@ -43,23 +45,25 @@ Its defaults are:
 - Metrics: Top-1, Top-3, Top-5, and Top-10
 
 ~~~bash
-./infer_beam_search.sh
+scripts/infer_beam_search.sh
 ~~~
 
 An explicit model path can be supplied:
 
 ~~~bash
-./infer_beam_search.sh \
+scripts/infer_beam_search.sh \
   --model-path /path/to/DianShi-RetroStep/models/DianShi-RetroStep-Direct \
   --data-path model_tests/test_out/s2s/testset_s2s_atomwise_new_cached \
   --num-gpus 8 \
   --batch-size 512
 ~~~
 
-## Running the Python programs separately
+## Running the Python modules separately
+
+Install the package with python3 -m pip install -e . first, or prefix the commands with PYTHONPATH=src.
 
 ~~~bash
-python3 vllm_beamsearch_infer.py \
+python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
   --model-path models/DianShi-RetroStep-Direct \
   --cached-data-path model_tests/test_out/s2s/testset_s2s_atomwise_new_cached \
   --output-path results/direct_test_out_beam10.jsonl \
@@ -67,7 +71,7 @@ python3 vllm_beamsearch_infer.py \
   --beam-width 10 \
   --no-thinking
 
-python3 eval_retro_beam_topk.py \
+python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   results/direct_test_out_beam10.jsonl \
   --ks 1 3 5 10 \
   --output-json results/direct_test_out_beam10_metrics.json
