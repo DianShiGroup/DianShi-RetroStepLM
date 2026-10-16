@@ -1,0 +1,15 @@
+# Planner LLM for Retro-R1, passed as `python cli.py --llm configs/planner.yaml`.
+# Serve it first with scripts/serve_planner.sh; this file only tells the
+# runner where to find it and how to talk to it.
+#
+# Assets (set in .env, see .env.example):
+#   PLANNER_BASE_URL   OpenAI-compatible endpoint, must include the /v1 suffix
+#   PLANNER_MODEL_NAME name the served model is registered under
+#   PLANNER_API_KEY    optional; api_key_env is an alternative that names the
+#                      variable to read the key from instead of inlining it
+base_url: ${PLANNER_BASE_URL:-http://127.0.0.1:8000/v1}
+api_key: ${PLANNER_API_KEY:-}
+model_name: ${PLANNER_MODEL_NAME:-planner}
+temperature: 0.0
+max_tokens: 32768
+timeout: 600

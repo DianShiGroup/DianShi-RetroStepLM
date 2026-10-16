@@ -1,0 +1,19 @@
+# Planner LLM for RetroAgent, passed to `slime_retro.eval` as
+# planner_url / planner_model / planner_api_key. Serve it first with
+# scripts/serve_planner.sh; this file only tells the eval driver where to
+# find it and how to talk to it.
+#
+# scripts/run_step_eval.sh reads these same three variables out of the
+# environment, so a one-shot run can skip this file entirely and just set
+# PLANNER_BASE_URL / PLANNER_MODEL_NAME / PLANNER_API_KEY.
+#
+# Assets (set in .env, see .env.example):
+#   PLANNER_BASE_URL   OpenAI-compatible endpoint, must include the /v1 suffix
+#   PLANNER_MODEL_NAME name the served model is registered under
+#   PLANNER_API_KEY    optional bearer token for the endpoint
+base_url: ${PLANNER_BASE_URL:-http://127.0.0.1:8000/v1}
+api_key: ${PLANNER_API_KEY:-}
+model_name: ${PLANNER_MODEL_NAME:-planner}
+temperature: 0.0
+max_tokens: 32768
+timeout: 600
