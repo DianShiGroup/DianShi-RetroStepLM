@@ -39,7 +39,7 @@ scripts/infer_beam_search.sh runs both programs in sequence: inference first, fo
 Its defaults are:
 
 - Model: models/DianShi-RetroStep-Direct
-- Dataset: model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached
+- Dataset: model_tests/test_out/sl_cot/testset_sl_cot_new_cached
 - Output directory: results
 - Beam width: 10
 - Metrics: Top-1, Top-3, Top-5, and Top-10
@@ -53,7 +53,7 @@ An explicit model path can be supplied:
 ~~~bash
 scripts/infer_beam_search.sh \
   --model-path /path/to/DianShi-RetroStep/models/DianShi-RetroStep-Direct \
-  --data-path model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached \
+  --data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
   --num-gpus 8 \
   --batch-size 512
 ~~~
@@ -65,7 +65,7 @@ Install the package with python3 -m pip install -e . first, or prefix the comman
 ~~~bash
 python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
   --model-path models/DianShi-RetroStep-Direct \
-  --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached \
+  --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
   --output-path results/sl_cot_test_out_beam10.jsonl \
   --num-gpus 1 \
   --beam-width 10 \

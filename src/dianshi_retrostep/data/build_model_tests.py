@@ -70,25 +70,12 @@ class Unit:
         return self.base / self.name
 
     @property
-    def atomwise_dir(self) -> Path:
-        return self.base / f"{self.name}_atomwise"
-
-    @property
     def cached_dir(self) -> Path:
         return self.base / f"{self.name}_new_cached"
 
     @property
-    def atomwise_cached_dir(self) -> Path:
-        return self.base / f"{self.name}_atomwise_new_cached"
-
-    @property
     def outputs(self) -> tuple[Path, ...]:
-        return (
-            self.jsonl_dir,
-            self.atomwise_dir,
-            self.cached_dir,
-            self.atomwise_cached_dir,
-        )
+        return (self.jsonl_dir, self.cached_dir)
 
     @property
     def prompt(self) -> Path:
@@ -265,7 +252,7 @@ def convert_unit(unit: Unit) -> int:
     unit.jsonl_dir.mkdir(parents=True, exist_ok=True)
     output = unit.jsonl_dir / "all.jsonl"
     temporary = output.with_suffix(".jsonl.tmp")
-    success = 0
+    success = spans = 0
     line_number = 0
     try:
         with unit.source.open("r", encoding="utf-8") as source, temporary.open(
@@ -284,6 +271,7 @@ def convert_unit(unit: Unit) -> int:
                     {"role": "system", "content": prompt["system"].format(**values)},
                     {"role": "user", "content": prompt["user"].format(**values)},
                 ]
+                messages, count = transform_messages(messages)
                 sample = {
                     "messages": messages,
                     "metadata": {
@@ -294,40 +282,18 @@ def convert_unit(unit: Unit) -> int:
                 }
                 destination.write(json.dumps(sample, ensure_ascii=False) + "\n")
                 success += 1
+                spans += count
         temporary.replace(output)
     except Exception as exc:
         temporary.unlink(missing_ok=True)
         raise RuntimeError(f"Failed while converting {unit} near input line {line_number}: {exc}") from exc
     if success == 0:
         raise RuntimeError(f"No records were generated for {unit}.")
-    print(f"  [convert] {success} records -> {display_path(output)}")
+    print(
+        f"  [convert] {success} records, {spans} atom-wise SMILES spans "
+        f"-> {display_path(output)}"
+    )
     return success
-
-
-def atomwise_unit(unit: Unit) -> None:
-    unit.atomwise_dir.mkdir(parents=True, exist_ok=True)
-    source = unit.jsonl_dir / "all.jsonl"
-    output = unit.atomwise_dir / "all.jsonl"
-    temporary = output.with_suffix(".jsonl.tmp")
-    temporary.unlink(missing_ok=True)
-    rows = spans = 0
-    try:
-        with source.open("r", encoding="utf-8") as src, temporary.open(
-            "x", encoding="utf-8"
-        ) as dst:
-            for line in src:
-                if not line.strip():
-                    continue
-                record = json.loads(line)
-                record["messages"], count = transform_messages(record.get("messages", []))
-                dst.write(json.dumps(record, ensure_ascii=False) + "\n")
-                rows += 1
-                spans += count
-        temporary.replace(output)
-    except Exception:
-        temporary.unlink(missing_ok=True)
-        raise
-    print(f"  [atomwise] {rows} records, {spans} transformed SMILES spans")
 
 
 def cache_jsonl(source_dir: Path, destination: Path) -> None:
@@ -377,11 +343,6 @@ def cache_jsonl(source_dir: Path, destination: Path) -> None:
     print(f"  [cache] {len(dataset)} records -> {display_path(destination)}")
 
 
-def cache_unit(unit: Unit) -> None:
-    cache_jsonl(unit.jsonl_dir, unit.cached_dir)
-    cache_jsonl(unit.atomwise_dir, unit.atomwise_cached_dir)
-
-
 def main() -> int:
     args = parse_args()
     try:
@@ -428,8 +389,7 @@ def main() -> int:
         for index, unit in enumerate(pending, 1):
             print(f"[{index}/{len(pending)}] {unit}")
             convert_unit(unit)
-            atomwise_unit(unit)
-            cache_unit(unit)
+            cache_jsonl(unit.jsonl_dir, unit.cached_dir)
             completed += 1
         print(f"[main] Completed {completed} unit(s) in {time.time() - started:.1f}s.")
         return 0

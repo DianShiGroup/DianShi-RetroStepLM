@@ -6,7 +6,7 @@ export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 MODEL_PATH="${MODEL_PATH:-models/DianShi-RetroStep-Direct}"
-CACHED_DATA_PATH="${CACHED_DATA_PATH:-model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached}"
+CACHED_DATA_PATH="${CACHED_DATA_PATH:-model_tests/test_out/sl_cot/testset_sl_cot_new_cached}"
 OUTPUT_DIR="${OUTPUT_DIR:-results}"
 OUTPUT_PATH="${OUTPUT_PATH:-}"
 NUM_GPUS="${NUM_GPUS:-1}"

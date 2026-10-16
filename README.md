@@ -76,14 +76,10 @@ Outputs are written under model_tests:
 model_tests/
   test_in/
     sl_cot/
-      testset_sl_cot/                       JSONL
-      testset_sl_cot_atomwise/              JSONL with atom-wise SMILES
-      testset_sl_cot_new_cached/            Hugging Face cached dataset
-      testset_sl_cot_atomwise_new_cached/   Hugging Face cached dataset, atom-wise
+      testset_sl_cot/                   JSONL
+      testset_sl_cot_new_cached/        Hugging Face cached dataset
       validationset_sl_cot/
-      validationset_sl_cot_atomwise/
       validationset_sl_cot_new_cached/
-      validationset_sl_cot_atomwise_new_cached/
   test_out/
     sl_cot/
       ...
@@ -113,7 +109,7 @@ The pipeline contains two Python modules:
 Its portable defaults are:
 
 - Model: models/DianShi-RetroStep-Direct
-- Cached dataset: model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached
+- Cached dataset: model_tests/test_out/sl_cot/testset_sl_cot_new_cached
 - Results directory: results
 - Beam width: 10
 - Top-k metrics: 1, 3, 5, and 10
@@ -123,12 +119,12 @@ The model may be specified with a repository-relative path, an absolute local pa
 ~~~bash
 scripts/infer_beam_search.sh \
   --model-path /path/to/DianShi-RetroStep/models/DianShi-RetroStep-Direct \
-  --data-path model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached \
+  --data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
   --num-gpus 8 \
   --batch-size 512
 ~~~
 
-To evaluate another sl_cot split, pass its cached directory through --data-path, for example model_tests/test_in/sl_cot/testset_sl_cot_atomwise_new_cached or model_tests/uspto_50k/sl_cot/testset_sl_cot_atomwise_new_cached.
+To evaluate another sl_cot split, pass its cached directory through --data-path, for example model_tests/test_in/sl_cot/testset_sl_cot_new_cached or model_tests/uspto_50k/sl_cot/testset_sl_cot_new_cached.
 
 The JSONL inference output and its metrics JSON are written under results by default. Existing result files are protected; pass --overwrite to replace one.
 
@@ -137,7 +133,7 @@ The modules can also be run separately (after pip install -e ., or with PYTHONPA
 ~~~bash
 python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
   --model-path models/DianShi-RetroStep-Direct \
-  --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_atomwise_new_cached \
+  --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
   --output-path results/sl_cot_test_out_beam10.jsonl \
   --num-gpus 1 \
   --beam-width 10 \
