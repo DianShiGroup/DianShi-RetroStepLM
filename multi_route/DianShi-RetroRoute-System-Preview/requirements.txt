@@ -4,7 +4,6 @@ openai==1.68.2
 # Data loading and processing
 pandas==2.2.3
 numpy==1.26.4
-tqdm==4.67.3
 
 # Chemistry and molecule rendering
 rdkit==2025.9.5

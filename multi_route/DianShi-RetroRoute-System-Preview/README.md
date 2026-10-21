@@ -189,7 +189,6 @@ result files alone reproduce the evaluation — no database is involved.
 | `runtime/step_api_client.py` | In-process step client wiring (backend / gate) |
 | `configs/bench/` | The three evaluation lanes |
 | `scripts/serve_planner.sh`, `scripts/serve_single_step.sh` | Plain vLLM launchers for the planner and step model |
-| `scripts/data_process/` | Building-block stock preparation (provenance) |
 | `docs/VALIDATE.md` | Gate definitions and parameter conventions |
 | `tests/` | Unit tests |
 
