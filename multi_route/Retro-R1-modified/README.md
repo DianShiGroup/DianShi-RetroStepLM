@@ -99,7 +99,7 @@ publishing.
 | Runtime assets tarball | — | `/mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz` | Unpacks to `retro_assets/`; brings the template library, the building-block stock and the target sets. |
 | rdchiral template library | `WANJ_RDCHIRAL_TEMPLATE_JSONL` | in the tarball: `template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
 | Building blocks | `STARTING_MOLECULES` | in the tarball: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
-| Planner weights | `PLANNER_MODEL_PATH` | Qwen3.5-397B-A17B-FP8 snapshot: `/mnt/shared-storage-gpfs2/gpfs2-shared-public/huggingface/hub/models--Qwen--Qwen3.5-397B-A17B-FP8/snapshots/9f1f3de9a3a48cfd340fd73ca98c02625b7afb3b` | The policy LLM. |
+| Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
 | Step-model weights | `SINGLE_STEP_MODEL_PATH` | the dianshi direct checkpoint: `/mnt/shared-storage-user/mineru4s/anxiao/ms-swift/output/0314_cot_v1_4b_10e_atomwise/v0-20260811-101041/checkpoint-47682` | Served separately from the planner. |
 | MLP step-model checkpoint | `--single_step` | Only for the original local MLP backend. `retro_star_zero_ours.ckpt` (V3) is distributed by [upstream Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) via [Google Drive](https://drive.google.com/drive/u/0/folders/13DdftEV0x55OZ8ZxHNAkmcvi_4x90hPI); place it under `one_step_model/`. |
 
@@ -131,6 +131,9 @@ cp .env.example .env && $EDITOR .env
 
 # 2. serve the planner (the policy)          -> $PLANNER_BASE_URL
 bash scripts/serve_planner.sh             # serves $PLANNER_MODEL_PATH
+#    PLANNER_MODEL_PATH defaults to the Hugging Face repo ID
+#    Qwen/Qwen3.5-397B-A17B-FP8; vLLM downloads it on first serve.
+#    Pre-download: huggingface-cli download Qwen/Qwen3.5-397B-A17B-FP8
 
 # 3. serve the single-step model             -> http://127.0.0.1:8001/v1
 bash scripts/serve_single_step.sh         # serves $SINGLE_STEP_MODEL_PATH

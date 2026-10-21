@@ -23,13 +23,18 @@ configurations are the ones the released numbers were produced with.
    table says where to place them.
    TODO(release): replace the internal asset paths with public download links.
 
+5. **Planner.** [Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8)
+   behind an OpenAI-compatible endpoint. vLLM can serve the Hugging Face repo
+   ID directly (it downloads on first use), or you can pre-download it with
+   `huggingface-cli download`.
+
 ## The three frameworks
 
 | Folder | Lineage | Search harness | Planner |
 |---|---|---|---|
-| [`RetroAgent/`](RetroAgent/README.md) | fork of [SXKDZ/RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) (COLM 2026) | HTTP tool server + AND-OR `GraphMemory` harness; agent issues tool calls | Qwen3.5-397B |
-| [`Retro-R1-modified/`](Retro-R1-modified/README.md) | fork of [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) (NeurIPS 2025) | in-process `CALL` / `SELECT` agent loop | Qwen3.5-397B |
-| [`DianShi-RetroRoute-System-Preview/`](DianShi-RetroRoute-System-Preview/README.md) | original in-process bench harness | AND-OR colony dispatcher + workers, JSONL output | Qwen3.5-397B |
+| [`RetroAgent/`](RetroAgent/README.md) | fork of [SXKDZ/RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) (COLM 2026) | HTTP tool server + AND-OR `GraphMemory` harness; agent issues tool calls | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
+| [`Retro-R1-modified/`](Retro-R1-modified/README.md) | fork of [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) (NeurIPS 2025) | in-process `CALL` / `SELECT` agent loop | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
+| [`DianShi-RetroRoute-System-Preview/`](DianShi-RetroRoute-System-Preview/README.md) | original in-process bench harness | AND-OR colony dispatcher + workers, JSONL output | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
 
 Each folder is fully self-contained: its own README (quick start, assets
 table, configuration reference), `requirements.txt`, serve scripts,
