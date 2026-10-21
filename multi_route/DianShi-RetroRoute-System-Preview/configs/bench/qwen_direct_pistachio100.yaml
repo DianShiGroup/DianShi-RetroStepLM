@@ -1,0 +1,62 @@
+# Qwen + direct 单步 + AOT* apply gate / Pistachio-100
+# Planner / single-step direct endpoints: fill in your own below.
+#
+#   python cli.py --config configs/bench/qwen_direct_pistachio100.yaml
+
+run:
+  input: retro_assets/targets/pistachio_hard_tree.txt
+  output: results/bench/pistachio_hard_tree_100/qwen_direct_rdchiral_aot.jsonl
+  log_file: results/bench/pistachio_hard_tree_100/qwen_direct_rdchiral_aot.log
+  concurrency: 2
+  resume: false
+
+starting_molecules: "${STARTING_MOLECULES:-./retro_assets/stock/emolecules_standardized.sqlite}"
+
+search:
+  max_steps: 500
+  max_tree_depth: 100
+  target_complete_paths: 1
+  reach_max_depth_prune: true
+
+planner:
+  default_model: "h-qwen/qwen3.5-397b"
+  system_prompt: "runtime/prompts/planner_system_v2.md"
+
+
+llm_config:
+  providers:
+    h-qwen:
+      base_url: "${PLANNER_BASE_URL:-http://127.0.0.1:8099/v1}"
+      api_key: "$PLANNER_API_KEY"
+      temperature: 0.0
+      max_tokens: 32768
+      timeout: 300
+      llms:
+        qwen3.5-397b:
+          model_name: "qwen3.5-397b"
+
+single_step:
+  rag_enabled: false
+  atomwise: true
+  max_tokens: 2048
+  api_key: "$SINGLE_STEP_API_KEY"
+  temperature: 0.0
+  timeout: 300
+  prompt_path_no_rag: "runtime/single_step/prompts/single_step_prompt_no_rag.txt"
+  forward_filter:
+    enabled: false
+  template_filter:
+    enabled: true
+    backend: rdchiral
+    match_mode: apply
+    template_path: "$DIANSHI_RDCHIRAL_TEMPLATE_JSONL"  # from the runtime-assets bundle
+    apply_max_templates: 256
+    blurry: true
+    blurry_top_n: 1000
+    ranking: aot
+    unsolved_penalty: 0.1
+  retro:
+    backend: "dianshi"
+    api_url: "${SINGLE_STEP_API_URL:-http://127.0.0.1:10120/v1/chat/completions}"
+    model: "qwen3-4b"
+    num_res: 10
