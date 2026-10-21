@@ -1,4 +1,4 @@
-"""WanJ rdchiral template gate for Retro-R1 DianShi-Direct single-step candidates.
+"""DianShi rdchiral template gate for Retro-R1 DianShi-Direct single-step candidates.
 
 Default match_mode is ``apply`` (AOT* / LLM-Syn-Planner style):
 
@@ -46,8 +46,8 @@ RDLogger.DisableLog("rdApp.*")
 # The rdchiral template library is never bundled with this repository. It is
 # resolved as: explicit config value > environment variable, and a fresh clone
 # gets an error naming the variable to set.
-#   WANJ_RDCHIRAL_TEMPLATE_JSONL  rdchiral template library (template_path)
-_WANJ_RDCHIRAL_JSONL = os.environ.get("WANJ_RDCHIRAL_TEMPLATE_JSONL", "").strip()
+#   DIANSHI_RDCHIRAL_TEMPLATE_JSONL  rdchiral template library (template_path)
+_DIANSHI_RDCHIRAL_JSONL = os.environ.get("DIANSHI_RDCHIRAL_TEMPLATE_JSONL", "").strip()
 
 _TEMPLATE_LOCK = threading.Lock()
 _TEMPLATE_EXECUTOR = ThreadPoolExecutor(
@@ -242,7 +242,7 @@ def _smarts_from_record(record: Any) -> str:
 
 
 def _iter_template_smarts(template_path: str):
-    """Yield (scan_index, SMARTS) from WanJ jsonl or DESP idx2template json."""
+    """Yield (scan_index, SMARTS) from DianShi jsonl or DESP idx2template json."""
     if template_path.endswith(".json") and not template_path.endswith(".jsonl"):
         with open(template_path, encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -323,7 +323,7 @@ def _load_rdchiral_extractor():
 
 
 class RdchiralTemplateFilter:
-    """Validate a predicted reaction against the WanJ rdchiral jsonl library."""
+    """Validate a predicted reaction against the DianShi rdchiral jsonl library."""
 
     gate_name = "template_filter"
 
@@ -337,7 +337,7 @@ class RdchiralTemplateFilter:
             )
         self.backend = backend
         self.match_mode = _parse_mode(config.get("match_mode"))
-        raw_path = config.get("template_path") or _WANJ_RDCHIRAL_JSONL
+        raw_path = config.get("template_path") or _DIANSHI_RDCHIRAL_JSONL
         self.template_path = _resolve_path(str(raw_path))
         self.mapper_timeout = float(config.get("mapper_timeout", 60))
         self.apply_max_templates = int(config.get("apply_max_templates", 256))
@@ -356,7 +356,7 @@ class RdchiralTemplateFilter:
         if not self.template_path:
             raise FileNotFoundError(
                 "rdchiral template library not found; set template_path in the "
-                "config or export WANJ_RDCHIRAL_TEMPLATE_JSONL (tried: "
+                "config or export DIANSHI_RDCHIRAL_TEMPLATE_JSONL (tried: "
                 f"{raw_path or '<unset>'})"
             )
         self.ranker = None

@@ -84,14 +84,13 @@ becomes SOLVED with `search.target_complete_paths` complete routes.
 
 ## Assets
 
-TODO(release): the table below holds temporary absolute paths on the internal
-shared storage; replace them with public download links before publishing.
+TODO(release): fill the public download links below.
 
 | Asset | Source |
 |---|---|
-| Runtime assets tarball (rdchiral template library, building-block stock, target sets) | `/mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz` |
+| Runtime assets tarball (rdchiral template library, building-block stock, target sets) | TODO(release): public download link (`retro_assets_20261015.tar.gz`) |
 | Planner weights (Qwen3.5-397B-A17B-FP8) | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) — vLLM can serve the repo ID directly (it downloads on first use), or pre-download with `huggingface-cli download`. |
-| Step-model weights (DianShi direct 4B) | `/mnt/shared-storage-user/mineru4s/anxiao/ms-swift/output/0314_cot_v1_4b_10e_atomwise/v0-20260811-101041/checkpoint-47682` |
+| Step-model weights (DianShi direct 4B) | TODO(release): public checkpoint link (DianShi direct 4B) |
 
 The SCScore NumPy implementation and the 2048-bit checkpoint used by the AOT\*
 gate are vendored in `runtime/single_step/aot_scscore/` — no extra download.
@@ -105,7 +104,7 @@ pip install -r requirements.txt
 # machine.
 
 # 1. Unpack the runtime assets, then set up .env
-tar xf /mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz
+tar xf /path/to/retro_assets_20261015.tar.gz
 cp .env.example .env && $EDITOR .env
 #    Defaults point at ./retro_assets/... for the template library, the stock
 #    and the target files. The lane configs read targets from
@@ -115,18 +114,17 @@ cp .env.example .env && $EDITOR .env
 
 ```bash
 # 2. Serve the models on the GPU machine
-bash scripts/rjob_serve_qwen35_397b.sh          # planner, 8 GPUs, TP=8
+bash scripts/serve_planner.sh          # planner, plain vLLM, 8 GPUs, TP=8
 #    MODEL_PATH defaults to the Hugging Face repo ID
 #    Qwen/Qwen3.5-397B-A17B-FP8; vLLM downloads it on first use.
 #    Pre-download: huggingface-cli download Qwen/Qwen3.5-397B-A17B-FP8
-bash scripts/rjob_serve_single_step_direct.sh   # step model, 8 GPUs, dp=8
-#    The two scripts target the internal rjob scheduler; any vLLM
-#    OpenAI-compatible server works — fill the endpoints into .env.
+bash scripts/serve_single_step.sh      # step model, plain vLLM
+#    Set SINGLE_STEP_MODEL_PATH in .env; any OpenAI-compatible server works.
 
 # 3. Run an evaluation (CPU is enough; runs in-process)
 python cli.py --config configs/bench/qwen_direct_uspto190.yaml
 python cli.py --config configs/bench/qwen_direct_pistachio100.yaml
-python cli.py --config configs/bench/qwen_direct_dianshi_150.yaml
+python cli.py --config configs/bench/qwen_direct_patmol_150.yaml
 ```
 
 ## Evaluation lanes
@@ -137,7 +135,7 @@ Three lanes ship, one per benchmark set:
 |---|---|---|---:|
 | `qwen_direct_uspto190.yaml` | USPTO-190 (public) | `retro_assets/targets/uspto_190_targets_smiles.txt` | 190 |
 | `qwen_direct_pistachio100.yaml` | Pistachio hard-tree 100 (public) | `retro_assets/targets/pistachio_hard_tree.txt` | 100 |
-| `qwen_direct_dianshi_150.yaml` | DianShi 150 (**internal — do not redistribute**) | `retro_assets/targets/final_product_routes_merged_root_smiles_dedup_longest_495_exclude_WanJRxn_Train_0314_exact_products_depth_max_ge_7_clean.txt` | 150 |
+| `qwen_direct_patmol_150.yaml` | PatMol-150 (**internal — do not redistribute**) | `retro_assets/targets/patmol_150_targets.txt` | 150 |
 
 The lane configs read target files directly from the tarball's `targets/`
 directory (`retro_assets/targets/`). `run.output` and `log_file` differ per
@@ -190,8 +188,7 @@ result files alone reproduce the evaluation — no database is involved.
 | `runtime/single_step/` | Step client assembly, candidate filters, AOT\* gate; `aot_scscore/` is the vendored SCScore |
 | `runtime/step_api_client.py` | In-process step client wiring (backend / gate) |
 | `configs/bench/` | The three evaluation lanes |
-| `scripts/bench/` | rjob submission scripts, one per lane |
-| `scripts/rjob_serve_*.sh` | vLLM launchers for the planner and the step model |
+| `scripts/serve_planner.sh`, `scripts/serve_single_step.sh` | Plain vLLM launchers for the planner and step model |
 | `scripts/data_process/` | Building-block stock preparation (provenance) |
 | `docs/VALIDATE.md` | Gate definitions and parameter conventions |
 | `tests/` | Unit tests |

@@ -1,12 +1,12 @@
-# Qwen + direct 单步 + AOT* apply gate / dianshi_150
+# Qwen + direct 单步 + AOT* apply gate / patmol_150
 # Planner / single-step direct endpoints: fill in your own below.
 #
-#   bash scripts/bench/qwen_direct_dianshi_150.sh
+#   python cli.py --config configs/bench/qwen_direct_patmol_150.yaml
 
 run:
-  input: retro_assets/targets/final_product_routes_merged_root_smiles_dedup_longest_495_exclude_WanJRxn_Train_0314_exact_products_depth_max_ge_7_clean.txt
-  output: results/bench/dianshi_150/qwen_direct_rdchiral_aot.jsonl
-  log_file: results/bench/dianshi_150/qwen_direct_rdchiral_aot.log
+  input: retro_assets/targets/patmol_150_targets.txt
+  output: results/bench/patmol_150/qwen_direct_rdchiral_aot.jsonl
+  log_file: results/bench/patmol_150/qwen_direct_rdchiral_aot.log
   concurrency: 2
   resume: false
 
@@ -49,7 +49,7 @@ single_step:
     enabled: true
     backend: rdchiral
     match_mode: apply
-    template_path: "$WANJ_RDCHIRAL_TEMPLATE_JSONL"  # from the runtime-assets bundle
+    template_path: "$DIANSHI_RDCHIRAL_TEMPLATE_JSONL"  # from the runtime-assets bundle
     apply_max_templates: 256
     blurry: true
     blurry_top_n: 1000

@@ -1,7 +1,7 @@
 # Qwen + direct 单步 + AOT* apply gate / Pistachio-100
 # Planner / single-step direct endpoints: fill in your own below.
 #
-#   bash scripts/bench/qwen_direct_pistachio100.sh
+#   python cli.py --config configs/bench/qwen_direct_pistachio100.yaml
 
 run:
   input: retro_assets/targets/pistachio_hard_tree.txt
@@ -49,7 +49,7 @@ single_step:
     enabled: true
     backend: rdchiral
     match_mode: apply
-    template_path: "$WANJ_RDCHIRAL_TEMPLATE_JSONL"  # from the runtime-assets bundle
+    template_path: "$DIANSHI_RDCHIRAL_TEMPLATE_JSONL"  # from the runtime-assets bundle
     apply_max_templates: 256
     blurry: true
     blurry_top_n: 1000

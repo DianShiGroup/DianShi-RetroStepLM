@@ -90,21 +90,19 @@ see the assets table below.
 None of these are in the repository. Fill them in `.env`
 (copy `.env.example`) and every config picks them up.
 
-TODO(release): the "get it from" paths below are temporary absolute paths on
-the internal shared storage; replace them with public download links before
-publishing.
+TODO(release): fill the public download links below.
 
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
-| Runtime assets tarball | — | `/mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz` | Unpacks to `retro_assets/`; brings the template library, the building-block stock and the target sets. |
-| rdchiral template library | `WANJ_RDCHIRAL_TEMPLATE_JSONL` | in the tarball: `template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
+| Runtime assets tarball | — | TODO(release): public download link (`retro_assets_20261015.tar.gz`) | Unpacks to `retro_assets/`; brings the template library, the building-block stock and the target sets. |
+| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the tarball: `template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
 | Building blocks | `STARTING_MOLECULES` | in the tarball: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
-| Step-model weights | `SINGLE_STEP_MODEL_PATH` | the dianshi direct checkpoint: `/mnt/shared-storage-user/mineru4s/anxiao/ms-swift/output/0314_cot_v1_4b_10e_atomwise/v0-20260811-101041/checkpoint-47682` | Served separately from the planner. |
+| Step-model weights | `SINGLE_STEP_MODEL_PATH` | TODO(release): public checkpoint link (DianShi direct 4B) | Served separately from the planner. |
 | MLP step-model checkpoint | `--single_step` | Only for the original local MLP backend. `retro_star_zero_ours.ckpt` (V3) is distributed by [upstream Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) via [Google Drive](https://drive.google.com/drive/u/0/folders/13DdftEV0x55OZ8ZxHNAkmcvi_4x90hPI); place it under `one_step_model/`. |
 
 The rdchiral template library resolves as explicit config value >
-`WANJ_RDCHIRAL_TEMPLATE_JSONL`, and a fresh clone that has neither set gets an
+`DIANSHI_RDCHIRAL_TEMPLATE_JSONL`, and a fresh clone that has neither set gets an
 error naming the variable. The AOT* SCScore checkpoint is vendored under
 `inference/gate/weights/`, so nothing here needs a second repository; see
 [Third-party code](#third-party-code).
@@ -123,9 +121,9 @@ pip install -r requirements.txt
 # scripts only need `vllm` on PATH
 
 # 1. unpack the runtime assets (from the repo root) and fill .env
-tar xf /mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz
+tar xf /path/to/retro_assets_20261015.tar.gz
 cp .env.example .env && $EDITOR .env
-#    WANJ_RDCHIRAL_TEMPLATE_JSONL=$PWD/retro_assets/template/rdchiral_res_rxn_temp_count.jsonl
+#    DIANSHI_RDCHIRAL_TEMPLATE_JSONL=$PWD/retro_assets/template/rdchiral_res_rxn_temp_count.jsonl
 #    STARTING_MOLECULES=$PWD/retro_assets/stock/emolecules_standardized.sqlite
 #    TARGETS_FILE=$PWD/retro_assets/targets/uspto_190_targets_smiles.txt
 
@@ -149,7 +147,7 @@ The same direct config serves all three target sets; only `TARGETS_FILE` or
 |---|---|---:|
 | Pistachio-100 | 100 | `retro_assets/targets/pistachio_hard_tree.txt` |
 | USPTO-190 | 190 | `retro_assets/targets/uspto_190_targets_smiles.txt` |
-| PatMol-150 (internal) | 150 | `retro_assets/targets/final_product_routes_merged_root_smiles_dedup_longest_495_exclude_WanJRxn_Train_0314_exact_products_depth_max_ge_7_clean.txt` |
+| PatMol-150 (internal) | 150 | `retro_assets/targets/patmol_150_targets.txt` |
 
 A dataset-specific config is not needed: the step model, gate and search
 protocol are identical, and the target set is selected at runtime.
@@ -210,7 +208,7 @@ The building-block stock is passed to the step tool separately, with
 
 | Variable | Used by | Meaning |
 |---|---|---|
-| `WANJ_RDCHIRAL_TEMPLATE_JSONL` | configs | rdchiral template library — required by the gate |
+| `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | configs | rdchiral template library — required by the gate |
 | `STARTING_MOLECULES` | `--starting_molecules` | Building-block stock the gate treats as purchasable |
 | `SCSCORE_WEIGHTS` | template gate | Alternative SCScore checkpoint; defaults to the vendored one |
 | `PLANNER_*` | `serve_planner.sh` | Weights, served name, port, TP, context length |
@@ -386,6 +384,6 @@ number. It is gone rather than left in as dead configuration.
 MIT, inherited from [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1).
 Vendored dependencies keep their own licenses (`packages/rdchiral/LICENSE`).
 The rdchiral template library is **not** part of this repository — obtain it
-from its own source and point `WANJ_RDCHIRAL_TEMPLATE_JSONL` at it. The AOT*
+from its own source and point `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` at it. The AOT*
 scScore checkpoint *is* included, under the terms described in
 [Third-party code](#third-party-code).

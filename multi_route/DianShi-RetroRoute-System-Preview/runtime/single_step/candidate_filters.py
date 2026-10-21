@@ -267,7 +267,7 @@ class ForwardRoundTripFilter:
 
 
 class LocalTemplateFilter:
-    """Validate a reaction against a WanJ 0314 template library."""
+    """Validate a reaction against a DianShi template library."""
 
     gate_name = "template_filter"
 

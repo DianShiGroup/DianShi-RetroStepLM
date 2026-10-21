@@ -45,7 +45,7 @@ single_step:
     backend: rdchiral
     # exact: extract template and look it up. apply: AOT* rewrite (needs backend: rdchiral and the jsonl library).
     match_mode: apply
-    template_path: "$WANJ_RDCHIRAL_TEMPLATE_JSONL"
+    template_path: "$DIANSHI_RDCHIRAL_TEMPLATE_JSONL"
     mapper_timeout: 60
     apply_max_templates: 256
     blurry: true

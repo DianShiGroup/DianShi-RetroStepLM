@@ -83,20 +83,18 @@ reranking (`ranking: none` keeps the original order).
 None of these are in the repository. Fill them in `.env`
 (copy `.env.example`) and every config picks them up.
 
-TODO(release): the "get it from" paths below are temporary absolute paths on
-the internal shared storage; replace them with public download links before
-publishing.
+TODO(release): fill the public download links below.
 
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
-| Runtime assets tarball | — | `/mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz` | Unpacks to `retro_assets/`; brings the template library, the building-block stock, the tool-server SCScore and the target sets. Place the files as described in its `README.md`. |
-| rdchiral template library | `WANJ_RDCHIRAL_TEMPLATE_JSONL` | in the tarball: `template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
+| Runtime assets tarball | — | TODO(release): public download link (`retro_assets_20261015.tar.gz`) | Unpacks to `retro_assets/`; brings the template library, the building-block stock, the tool-server SCScore and the target sets. Place the files as described in its `README.md`. |
+| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the tarball: `template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
 | Building blocks | `STARTING_MOLECULES` | in the tarball: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
-| Step-model weights | `SINGLE_STEP_MODEL_PATH` | the dianshi direct checkpoint: `/mnt/shared-storage-user/mineru4s/anxiao/ms-swift/output/0314_cot_v1_4b_10e_atomwise/v0-20260811-101041/checkpoint-47682` | Served separately from the planner. |
+| Step-model weights | `SINGLE_STEP_MODEL_PATH` | TODO(release): public checkpoint link (DianShi direct 4B) | Served separately from the planner. |
 
 The rdchiral template library resolves as explicit config value >
-`WANJ_RDCHIRAL_TEMPLATE_JSONL`, and a fresh clone that has neither set gets an
+`DIANSHI_RDCHIRAL_TEMPLATE_JSONL`, and a fresh clone that has neither set gets an
 error naming the variable. The AOT* SCScore checkpoint is vendored under
 `inference/gate/weights/`, so nothing here needs a second repository; see
 [Third-party code](#third-party-code).
@@ -113,7 +111,7 @@ pip install -r requirements.txt           # tool server + eval driver (host pyth
 # machine -- install it there; the serve scripts only need `vllm` on PATH
 
 # 1. unpack the runtime assets (from the repo root; see "Assets you must provide")
-tar xf /mnt/shared-storage-user/mineru4s/lixibao/retro_assets_20261015.tar.gz
+tar xf /path/to/retro_assets_20261015.tar.gz
 mkdir -p dataset
 cp retro_assets/stock/emolecules_standardized.sqlite dataset/   # tool-server default path
 mkdir -p datasets/scscore
@@ -141,7 +139,7 @@ The same direct config serves all three target sets; only `--targets` changes:
 |---|---|---:|
 | Pistachio-100 | 100 | `retro_assets/targets/pistachio_hard_tree.txt` |
 | USPTO-190 | 190 | `retro_assets/targets/uspto_190_targets_smiles.txt` |
-| PatMol-150 (internal) | 150 | `retro_assets/targets/final_product_routes_merged_root_smiles_dedup_longest_495_exclude_WanJRxn_Train_0314_exact_products_depth_max_ge_7_clean.txt` |
+| PatMol-150 (internal) | 150 | `retro_assets/targets/patmol_150_targets.txt` |
 
 A dataset-specific config is not needed: the step model, gate and search
 protocol are identical, and the target set is selected at runtime.
@@ -186,7 +184,7 @@ silently empty path.
 
 | Variable | Used by | Meaning |
 |---|---|---|
-| `WANJ_RDCHIRAL_TEMPLATE_JSONL` | configs | rdchiral template library — required by the gate |
+| `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | configs | rdchiral template library — required by the gate |
 | `STARTING_MOLECULES` | configs | Building-block stock the gate treats as purchasable |
 | `SCSCORE_WEIGHTS` | template gate | Alternative SCScore checkpoint; defaults to the vendored one |
 | `TOKENIZER_MODEL_NAME` | eval scripts | Tokenizer that renders the planner prompt; defaults to the public Qwen3-4B, whose chat template is the one the released numbers were produced with |
@@ -415,6 +413,6 @@ license and attribution (see [`NOTICE`](NOTICE)). Building blocks originate
 from eMolecules and the route data from
 [Retro\*](https://github.com/binghong-ml/retro_star) — cite the upstream work
 you use. The rdchiral template library is **not** part of this repository —
-obtain it from its own source and point `WANJ_RDCHIRAL_TEMPLATE_JSONL` at it.
+obtain it from its own source and point `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` at it.
 The AOT* scorer and its checkpoint are vendored under `inference/gate/`; see
 [Third-party code](#third-party-code) for attribution and terms.

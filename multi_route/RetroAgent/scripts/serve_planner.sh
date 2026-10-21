@@ -43,7 +43,9 @@ done
 
 # Any OpenAI-compatible server works; this is the one we used.
 command -v vllm >/dev/null 2>&1 || die "vllm not on PATH (pip install 'vllm>=0.18'; validated with 0.26)"
-[[ -e "${MODEL_PATH}" ]] || die "model path does not exist: ${MODEL_PATH}"
+if [[ "${MODEL_PATH}" == /* || "${MODEL_PATH}" == ./* ]]; then
+  [[ -e "${MODEL_PATH}" ]] || die "model path does not exist: ${MODEL_PATH}"
+fi
 mkdir -p "${LOG_DIR}"
 
 echo ">>> Serving ${MODEL_PATH}"

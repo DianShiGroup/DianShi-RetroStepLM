@@ -24,7 +24,7 @@ from .smiles_canonical import canonicalize_reactants, canonicalize_smiles_clear_
 logger = logging.getLogger(__name__)
 RDLogger.DisableLog("rdApp.*")
 
-_WANJ_RDCHIRAL_JSONL = "/path/to/rdchiral_res_rxn_temp_count.jsonl"
+_DIANSHI_RDCHIRAL_JSONL = "/path/to/rdchiral_res_rxn_temp_count.jsonl"
 _SQLITE_SUFFIXES = {".sqlite", ".sqlite3", ".db"}
 
 
@@ -213,7 +213,7 @@ def _smarts_from_record(record: Any) -> str:
 
 
 def _iter_template_smarts(template_path: str):
-    """Yield (scan_index, SMARTS) from WanJ jsonl or DESP idx2template json."""
+    """Yield (scan_index, SMARTS) from DianShi jsonl or DESP idx2template json."""
     if template_path.endswith(".json") and not template_path.endswith(".jsonl"):
         with open(template_path, encoding="utf-8") as handle:
             payload = json.load(handle)
@@ -284,7 +284,7 @@ class AOTTemplateFilter:
                 "template_filter.match_mode=apply requires backend=rdchiral, "
                 f"got {backend!r}"
             )
-        raw_path = config.get("template_path") or _WANJ_RDCHIRAL_JSONL
+        raw_path = config.get("template_path") or _DIANSHI_RDCHIRAL_JSONL
         self.template_path = _resolve_path(str(raw_path))
         if not self.template_path:
             raise FileNotFoundError(f"rdchiral template library not found: {raw_path}")

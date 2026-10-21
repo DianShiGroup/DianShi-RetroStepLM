@@ -21,7 +21,7 @@ configurations are the ones the released numbers were produced with.
 4. **Runtime assets.** The rdchiral template library, the stock sqlite and the
    public target sets ship as one tarball; each component README's assets
    table says where to place them.
-   TODO(release): replace the internal asset paths with public download links.
+   TODO(release): fill the public asset download links.
 
 5. **Planner.** [Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8)
    behind an OpenAI-compatible endpoint. vLLM can serve the Hugging Face repo
@@ -51,7 +51,7 @@ target file is a runtime input, not a step-model setting:
 |---|---|---:|
 | Pistachio-100 | 100 | `retro_assets/targets/pistachio_hard_tree.txt` |
 | USPTO-190 | 190 | `retro_assets/targets/uspto_190_targets_smiles.txt` |
-| PatMol-150 (internal) | 150 | `retro_assets/targets/final_product_routes_merged_root_smiles_dedup_longest_495_exclude_WanJRxn_Train_0314_exact_products_depth_max_ge_7_clean.txt` |
+| PatMol-150 (internal) | 150 | `retro_assets/targets/patmol_150_targets.txt` |
 
 RetroAgent and Retro-R1-modified ship one `configs/dianshi_direct.yaml` and
 select the target set with `--targets` / `--data_file`; they do not need

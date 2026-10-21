@@ -12,7 +12,7 @@
 #   SINGLE_STEP_BASE_URL               OpenAI-compatible endpoint, must include the /v1 suffix
 #   SINGLE_STEP_MODEL                  name the served step model is registered under
 #   SINGLE_STEP_API_KEY               optional bearer token for the endpoint
-#   WANJ_RDCHIRAL_TEMPLATE_JSONL      rdchiral template library (required by the gate)
+#   DIANSHI_RDCHIRAL_TEMPLATE_JSONL      rdchiral template library (required by the gate)
 #   STARTING_MOLECULES                building-block stock sqlite (required by the gate)
 #   SCSCORE_WEIGHTS                   optional; defaults to the bundled checkpoint
 backend: dianshi_direct
@@ -26,7 +26,7 @@ template_filter:
   enabled: true
   backend: rdchiral
   match_mode: apply
-  template_path: ${WANJ_RDCHIRAL_TEMPLATE_JSONL}
+  template_path: ${DIANSHI_RDCHIRAL_TEMPLATE_JSONL}
   mapper_timeout: 60
   apply_max_templates: 256
   blurry: true

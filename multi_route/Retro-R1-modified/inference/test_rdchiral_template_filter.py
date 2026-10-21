@@ -32,7 +32,7 @@ from inference.step.dianshi_direct import (
 
 GATE_MODULE = "inference.gate.rdchiral_template_filter"
 LIBRARY_IDS = itertools.count()
-# Actual WanJ library rows 1, 2 and 7, ordered by training frequency.
+# Actual DianShi library rows 1, 2 and 7, ordered by training frequency.
 ESTER_TEMPLATES = [
     "[O;D1;H0:3]=[C:2]-[OH;D1;+0:1]>>C-[O;H0;D2;+0:1]-[C:2]=[O;D1;H0:3]",
     "[O;D1;H0:3]=[C:2]-[OH;D1;+0:1]>>C-C-[O;H0;D2;+0:1]-[C:2]=[O;D1;H0:3]",
