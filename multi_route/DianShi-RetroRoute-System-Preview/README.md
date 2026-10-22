@@ -84,13 +84,11 @@ becomes SOLVED with `search.target_complete_paths` complete routes.
 
 ## Assets
 
-TODO(release): fill the public download links below.
-
 | Asset | Source |
 |---|---|
-| Runtime assets tarball (rdchiral template library, building-block stock, target sets) | TODO(release): public download link (`retro_assets_20261015.tar.gz`) |
+| Runtime assets (rdchiral template library, building-block stock, target sets) | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) |
 | Planner weights (Qwen3.5-397B-A17B-FP8) | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) — vLLM can serve the repo ID directly (it downloads on first use), or pre-download with `huggingface-cli download`. |
-| Step-model weights (DianShi direct 4B) | TODO(release): public checkpoint link (DianShi direct 4B) |
+| Step-model weights (DianShi-RetroStep-LM-Direct) | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) |
 
 The SCScore NumPy implementation and the 2048-bit checkpoint used by the AOT\*
 gate are vendored in `runtime/single_step/aot_scscore/` — no extra download.
@@ -103,12 +101,12 @@ pip install -r requirements.txt
 # Serving additionally needs vLLM (>= 0.18; validated with 0.26) on the GPU
 # machine.
 
-# 1. Unpack the runtime assets, then set up .env
-tar xf /path/to/retro_assets_20261015.tar.gz
+# 1. Download the runtime assets, then set up .env
+hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
 cp .env.example .env && $EDITOR .env
-#    Defaults point at ./retro_assets/... for the template library, the stock
+#    Defaults point at ./DianShi-RetroRoute-Dataset/... for the template library, the stock
 #    and the target files. The lane configs read targets from
-#    ./retro_assets/targets/; edit the lane yaml if you unpacked elsewhere.
+#    ./DianShi-RetroRoute-Dataset/test_dataset/; edit the lane yaml if you downloaded elsewhere.
 #    At startup the gate should log: stock=23081629 | templates=412027.
 ```
 
@@ -133,12 +131,12 @@ Three lanes ship, one per benchmark set:
 
 | Config | Benchmark | Target file | Targets |
 |---|---|---|---:|
-| `qwen_direct_uspto190.yaml` | USPTO-190 (public) | `retro_assets/targets/uspto_190_targets_smiles.txt` | 190 |
-| `qwen_direct_pistachio100.yaml` | Pistachio hard-tree 100 (public) | `retro_assets/targets/pistachio_hard_tree.txt` | 100 |
-| `qwen_direct_patmol_150.yaml` | PatMol-150 (**internal — do not redistribute**) | `retro_assets/targets/patmol_150_targets.txt` | 150 |
+| `qwen_direct_uspto190.yaml` | USPTO-190 (public) | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` | 190 |
+| `qwen_direct_pistachio100.yaml` | Pistachio hard-tree 100 (public) | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` | 100 |
+| `qwen_direct_patmol_150.yaml` | PatMol-150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` | 150 |
 
-The lane configs read target files directly from the tarball's `targets/`
-directory (`retro_assets/targets/`). `run.output` and `log_file` differ per
+The lane configs read target files directly from
+`DianShi-RetroRoute-Dataset/test_dataset/`. `run.output` and `log_file` differ per
 lane. Endpoints and asset paths are set in `.env`; global defaults live in
 `config.yaml`.
 

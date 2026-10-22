@@ -19,9 +19,9 @@ configurations are the ones the released numbers were produced with.
 3. **Purchasable building-block stock.** A standardized eMolecules sqlite
    (23M entries) used for exact canonical-SMILES availability checks.
 4. **Runtime assets.** The rdchiral template library, the stock sqlite and the
-   public target sets ship as one tarball; each component README's assets
-   table says where to place them.
-   TODO(release): fill the public asset download links.
+   target sets are published as the Hugging Face dataset
+   [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset);
+   each component README's assets table says where to place them.
 
 5. **Planner.** [Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8)
    behind an OpenAI-compatible endpoint. vLLM can serve the Hugging Face repo
@@ -49,9 +49,9 @@ target file is a runtime input, not a step-model setting:
 
 | Dataset | Targets | Target file |
 |---|---|---:|
-| Pistachio-100 | 100 | `retro_assets/targets/pistachio_hard_tree.txt` |
-| USPTO-190 | 190 | `retro_assets/targets/uspto_190_targets_smiles.txt` |
-| PatMol-150 (internal) | 150 | `retro_assets/targets/patmol_150_targets.txt` |
+| Pistachio-100 | 100 | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` |
+| USPTO-190 | 190 | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` |
+| PatMol-150 | 150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` |
 
 RetroAgent and Retro-R1-modified ship one `configs/dianshi_direct.yaml` and
 select the target set with `--targets` / `--data_file`; they do not need
@@ -63,7 +63,7 @@ output paths.
 
 ```bash
 # 0. per-component environment      see the component README
-# 1. unpack the runtime assets      tarball; placement per component README
+# 1. download the runtime assets    HF dataset; placement per component README
 # 2. serve the two models           vLLM; serve scripts included in each component
 # 3. run the evaluation             single command per component
 ```

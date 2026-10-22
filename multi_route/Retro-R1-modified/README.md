@@ -77,7 +77,7 @@ reranking (`ranking: none` keeps the original order).
 The original local MLP backend is still available and needs no config file:
 
 ```bash
-python cli.py --data_file retro_assets/targets/uspto_190_targets_smiles.txt --llm configs/planner.yaml \
+python cli.py --data_file DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt --llm configs/planner.yaml \
               --single_step one_step_model/retro_star_zero_ours.ckpt
 ```
 
@@ -90,15 +90,13 @@ see the assets table below.
 None of these are in the repository. Fill them in `.env`
 (copy `.env.example`) and every config picks them up.
 
-TODO(release): fill the public download links below.
-
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
-| Runtime assets tarball | — | TODO(release): public download link (`retro_assets_20261015.tar.gz`) | Unpacks to `retro_assets/`; brings the template library, the building-block stock and the target sets. |
-| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the tarball: `template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
-| Building blocks | `STARTING_MOLECULES` | in the tarball: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
+| Runtime assets | — | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | Download to `DianShi-RetroRoute-Dataset/`; brings the template library, the building-block stock and the target sets. |
+| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
+| Building blocks | `STARTING_MOLECULES` | in the dataset: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
-| Step-model weights | `SINGLE_STEP_MODEL_PATH` | TODO(release): public checkpoint link (DianShi direct 4B) | Served separately from the planner. |
+| Step-model weights | `SINGLE_STEP_MODEL_PATH` | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) | Served separately from the planner. |
 | MLP step-model checkpoint | `--single_step` | Only for the original local MLP backend. `retro_star_zero_ours.ckpt` (V3) is distributed by [upstream Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) via [Google Drive](https://drive.google.com/drive/u/0/folders/13DdftEV0x55OZ8ZxHNAkmcvi_4x90hPI); place it under `one_step_model/`. |
 
 The rdchiral template library resolves as explicit config value >
@@ -109,7 +107,7 @@ error naming the variable. The AOT* SCScore checkpoint is vendored under
 
 ## Quick start
 
-Four steps. Unpack the runtime assets, create the environment, serve each model
+Four steps. Download the runtime assets, create the environment, serve each model
 on the machine that has the GPUs, then run one evaluation.
 
 ```bash
@@ -120,12 +118,12 @@ pip install -r requirements.txt
 # machine -- install it there; a separate environment is fine, the serve
 # scripts only need `vllm` on PATH
 
-# 1. unpack the runtime assets (from the repo root) and fill .env
-tar xf /path/to/retro_assets_20261015.tar.gz
+# 1. download the runtime assets (from the repo root) and fill .env
+hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
 cp .env.example .env && $EDITOR .env
-#    DIANSHI_RDCHIRAL_TEMPLATE_JSONL=$PWD/retro_assets/template/rdchiral_res_rxn_temp_count.jsonl
-#    STARTING_MOLECULES=$PWD/retro_assets/stock/emolecules_standardized.sqlite
-#    TARGETS_FILE=$PWD/retro_assets/targets/uspto_190_targets_smiles.txt
+#    DIANSHI_RDCHIRAL_TEMPLATE_JSONL=$PWD/DianShi-RetroRoute-Dataset/rxn_template/rdchiral_res_rxn_temp_count.jsonl
+#    STARTING_MOLECULES=$PWD/DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite
+#    TARGETS_FILE=$PWD/DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt
 
 # 2. serve the planner (the policy)          -> $PLANNER_BASE_URL
 bash scripts/serve_planner.sh             # serves $PLANNER_MODEL_PATH
@@ -145,9 +143,9 @@ The same direct config serves all three target sets; only `TARGETS_FILE` or
 
 | Dataset | Targets | Target file |
 |---|---|---:|
-| Pistachio-100 | 100 | `retro_assets/targets/pistachio_hard_tree.txt` |
-| USPTO-190 | 190 | `retro_assets/targets/uspto_190_targets_smiles.txt` |
-| PatMol-150 (internal) | 150 | `retro_assets/targets/patmol_150_targets.txt` |
+| Pistachio-100 | 100 | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` |
+| USPTO-190 | 190 | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` |
+| PatMol-150 | 150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` |
 
 A dataset-specific config is not needed: the step model, gate and search
 protocol are identical, and the target set is selected at runtime.
@@ -162,7 +160,7 @@ To drive `cli.py` yourself instead:
 
 ```bash
 python cli.py \
-  --data_file retro_assets/targets/uspto_190_targets_smiles.txt \
+  --data_file DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt \
   --llm configs/planner.yaml \
   --single_step_config configs/dianshi_direct.yaml \
   --output_dir results/direct
@@ -241,7 +239,7 @@ configuration, and writes per-target results plus a trajectory:
 
 ```bash
 python cli.py \
-  --data_file retro_assets/targets/uspto_190_targets_smiles.txt \
+  --data_file DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt \
   --llm configs/planner.yaml \
   --single_step_config configs/dianshi_direct.yaml \
   --max_turns 100 --maxstep 30 --topk 10 \

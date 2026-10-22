@@ -21,7 +21,7 @@
 # Usage:
 #   bash scripts/run_step_eval.sh \
 #       --config configs/dianshi_direct.yaml \
-#       --targets retro_assets/targets/uspto_190_targets_smiles.txt
+#       --targets DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt
 set -euo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"

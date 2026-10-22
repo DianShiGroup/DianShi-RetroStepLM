@@ -39,7 +39,7 @@ are the settings of this implementation; AOT\* itself has different defaults.
 
 ## Library and stock
 
-- Template library: `template/rdchiral_res_rxn_temp_count.jsonl` from the
+- Template library: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` from the
   runtime-assets bundle (412,027 entries), exposed as
   `DIANSHI_RDCHIRAL_TEMPLATE_JSONL`.
 - Purchasable stock: `stock/emolecules_standardized.sqlite`

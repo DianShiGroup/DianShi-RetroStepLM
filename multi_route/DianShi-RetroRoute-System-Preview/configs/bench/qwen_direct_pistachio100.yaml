@@ -4,13 +4,13 @@
 #   python cli.py --config configs/bench/qwen_direct_pistachio100.yaml
 
 run:
-  input: retro_assets/targets/pistachio_hard_tree.txt
+  input: DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt
   output: results/bench/pistachio_hard_tree_100/qwen_direct_rdchiral_aot.jsonl
   log_file: results/bench/pistachio_hard_tree_100/qwen_direct_rdchiral_aot.log
   concurrency: 2
   resume: false
 
-starting_molecules: "${STARTING_MOLECULES:-./retro_assets/stock/emolecules_standardized.sqlite}"
+starting_molecules: "${STARTING_MOLECULES:-./DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite}"
 
 search:
   max_steps: 500
