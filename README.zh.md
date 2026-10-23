@@ -245,6 +245,17 @@ python3 cli.py --config configs/bench/qwen_direct_pistachio100.yaml
 
 先按对应框架说明安装依赖、准备资源和 `.env`，并启动 planner 与单步模型服务。然后在仓库根目录运行以下任一命令：
 
+RetroAgent 的 tool server 会从固定的相对路径加载两个资源，首次运行前请先放好：
+
+~~~bash
+(
+  cd multi_route/RetroAgent
+  mkdir -p dataset datasets/scscore
+  cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/
+  cp DianShi-RetroRoute-Dataset/scscore/model.ckpt-10654.as_numpy.json.gz datasets/scscore/
+)
+~~~
+
 ~~~bash
 (
   cd multi_route/RetroAgent
@@ -284,6 +295,20 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 ~~~
 
 脚本会自动识别结果格式，并报告可能的基础设施故障。求解率基于所提供的记录计算；比较不同运行前，请确认目标集完整并处理已报告的故障。对于 RetroAgent 的 `summary.json`，脚本使用第一个实验。
+
+## 许可证
+
+本仓库以 [Apache-2.0](LICENSE) 发布，但 `multi_route/` 下的两个上游 fork 沿用各自的条款：
+
+| 路径 | 许可证 |
+|---|---|
+| 其余全部内容，含 `src/` 与 `multi_route/DianShi-RetroRoute-System-Preview/` | Apache-2.0（[`LICENSE`](LICENSE)） |
+| `multi_route/RetroAgent/` | MIT（[`LICENSE`](multi_route/RetroAgent/LICENSE)、[`NOTICE`](multi_route/RetroAgent/NOTICE)） |
+| `multi_route/Retro-R1-modified/` | MIT（[`LICENSE`](multi_route/Retro-R1-modified/LICENSE)） |
+
+内置的第三方依赖保留各自的许可证，见 `multi_route/Retro-R1-modified/packages/*/LICENSE`
+及各组件 README。数据集与模型权重单独发布，适用其 Hugging Face 页面上声明的条款；
+其中 eMolecules 砌块数据另有自己的使用条款，再分发前请先确认。
 
 ## 致谢
 

@@ -245,6 +245,17 @@ The supplied benchmark YAMLs enable the template gate and set `max_steps: 500`, 
 
 First follow the corresponding framework guide to install its dependencies, prepare its assets and `.env`, and start the planner and single-step services. Then run one of these commands from the repository root:
 
+RetroAgent's tool server loads two assets from fixed relative paths, so place them before the first run:
+
+~~~bash
+(
+  cd multi_route/RetroAgent
+  mkdir -p dataset datasets/scscore
+  cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/
+  cp DianShi-RetroRoute-Dataset/scscore/model.ckpt-10654.as_numpy.json.gz datasets/scscore/
+)
+~~~
+
 ~~~bash
 (
   cd multi_route/RetroAgent
@@ -284,6 +295,23 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 ~~~
 
 The script detects the result format automatically and reports possible infrastructure failures. It computes rates over the supplied records; confirm target-set completeness and resolve reported failures before comparing runs. For RetroAgent `summary.json`, it uses the first experiment.
+
+## License
+
+This repository is licensed under [Apache-2.0](LICENSE), except for the two
+upstream forks under `multi_route/`, which keep their own terms:
+
+| Path | License |
+|---|---|
+| Everything else, including `src/` and `multi_route/DianShi-RetroRoute-System-Preview/` | Apache-2.0 ([`LICENSE`](LICENSE)) |
+| `multi_route/RetroAgent/` | MIT ([`LICENSE`](multi_route/RetroAgent/LICENSE), [`NOTICE`](multi_route/RetroAgent/NOTICE)) |
+| `multi_route/Retro-R1-modified/` | MIT ([`LICENSE`](multi_route/Retro-R1-modified/LICENSE)) |
+
+Vendored dependencies keep their own licenses — see
+`multi_route/Retro-R1-modified/packages/*/LICENSE` and the component READMEs.
+The datasets and model weights are distributed separately under the terms stated
+on their Hugging Face pages; the eMolecules building-block data in particular
+has its own terms, so check them before redistributing.
 
 ## Attribution
 

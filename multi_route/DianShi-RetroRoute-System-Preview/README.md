@@ -9,11 +9,10 @@ search ends when the target molecule is decomposed into purchasable building
 blocks or the single-step budget is exhausted.
 
 The configuration shipped in this repository is the one the released numbers
-were produced with: **Qwen3.5-397B as the planner, DianShi direct direct as the
-single-step model, AOT\* gate on**. This `opensource` branch contains only what
-that reproduction needs; other single-step backends (RAG, RSGPT,
-RXNGraphormer), other gate variants and historical experiment configs were
-removed here and remain on the `v2.1.1-bench-v1` branch.
+were produced with: **Qwen3.5-397B as the planner, DianShi-RetroStep-LM-Direct
+as the single-step model, AOT\* gate on**. Only what that reproduction needs is
+included here; other single-step backends (RAG, RSGPT, RXNGraphormer), other
+gate variants and historical experiment configs are not part of this release.
 
 ## How the search works
 
