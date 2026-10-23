@@ -126,7 +126,7 @@ scripts/infer_beam_search.sh \
 | `--num-gpus` / `--batch-size` | `1` / `128` |
 | `--beam-width` / `--max-tokens` | `10` / `1024` |
 | Top-k metrics | 1, 3, 5, 10 |
-| Thinking | disabled in the chat template (`--enable-thinking` to turn it on) |
+| Thinking | enabled, as in the reported experiments (`--no-thinking` to turn it off) |
 
 Each option can also be set by its uppercase environment variable, for example `MODEL_PATH=... NUM_GPUS=4 scripts/infer_beam_search.sh`. Existing result files are protected; pass `--overwrite` to replace one.
 
@@ -141,8 +141,7 @@ python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
   --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
   --output-path results/sl_cot_test_out_beam10.jsonl \
   --num-gpus 1 \
-  --beam-width 10 \
-  --no-thinking
+  --beam-width 10
 
 python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   results/sl_cot_test_out_beam10.jsonl \

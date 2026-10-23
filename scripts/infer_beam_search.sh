@@ -15,7 +15,7 @@ MAX_TOKENS="${MAX_TOKENS:-1024}"
 BEAM_WIDTH="${BEAM_WIDTH:-10}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.8}"
 EVAL_KS="${EVAL_KS:-1 3 5 10}"
-NO_THINKING=1
+NO_THINKING=0
 OVERWRITE=0
 
 usage() {
@@ -31,7 +31,8 @@ usage() {
     echo "  --max-tokens N            Maximum generated tokens per beam"
     echo "  --beam-width N            Number of beams"
     echo "  --gpu-memory-utilization F"
-    echo "  --enable-thinking         Do not disable thinking in the chat template"
+    echo "  --enable-thinking         Leave thinking enabled in the chat template (default)"
+    echo "  --no-thinking             Pass enable_thinking=False to the chat template"
     echo "  --overwrite               Replace an existing result file"
     echo "  -h, --help                Show this help"
 }
@@ -48,6 +49,7 @@ while [ "$#" -gt 0 ]; do
         --beam-width) BEAM_WIDTH="$2"; shift 2 ;;
         --gpu-memory-utilization) GPU_MEMORY_UTILIZATION="$2"; shift 2 ;;
         --enable-thinking) NO_THINKING=0; shift ;;
+        --no-thinking) NO_THINKING=1; shift ;;
         --overwrite) OVERWRITE=1; shift ;;
         -h|--help) usage; exit 0 ;;
         *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;

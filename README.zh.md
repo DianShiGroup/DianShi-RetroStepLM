@@ -126,7 +126,7 @@ scripts/infer_beam_search.sh \
 | `--num-gpus` / `--batch-size` | `1` / `128` |
 | `--beam-width` / `--max-tokens` | `10` / `1024` |
 | Top-k 指标 | 1、3、5、10 |
-| Thinking | 在 chat template 中关闭（用 `--enable-thinking` 开启） |
+| Thinking | 开启，与论文实验一致（用 `--no-thinking` 关闭） |
 
 每个选项也可以用对应的大写环境变量设置，例如 `MODEL_PATH=... NUM_GPUS=4 scripts/infer_beam_search.sh`。已有结果文件不会被覆盖；需要替换时加 `--overwrite`。
 
@@ -141,8 +141,7 @@ python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
   --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
   --output-path results/sl_cot_test_out_beam10.jsonl \
   --num-gpus 1 \
-  --beam-width 10 \
-  --no-thinking
+  --beam-width 10
 
 python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   results/sl_cot_test_out_beam10.jsonl \
