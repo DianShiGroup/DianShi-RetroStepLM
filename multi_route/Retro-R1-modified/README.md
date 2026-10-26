@@ -307,7 +307,15 @@ reward and the training entry points.
 | `agent_r1/` | PPO/GRPO training on top of verl: rollout generator, reward, tool env |
 | `agent_r1/tool/tools/` | The `CALL` / `SELECT` tools and their prompts |
 | `examples/`, `dataset/`, `one_step_model/` | Upstream targets, route data and MLP step-model assets |
-| `packages/` | Vendored dependencies (`rdchiral`, `nvidia-resiliency-ext`) |
+| `packages/` | Vendored dependencies (`rdchiral`, `mlp_retrosyn`, `nvidia-resiliency-ext`) |
+
+> **Backtracking training entry point.** The upstream
+> `agent_r1/src/main_agent_retro.py` entry imports
+> `reaction_pathway_reward_back`, which is absent from the upstream Retro-R1
+> release as well. It is not used by inference or the shipped evaluation
+> commands; use the `noback` entry points (for example
+> `main_agent_retro_noback_new.py`) for training. The upstream tree is left
+> unchanged on purpose.
 
 ## Citation and License
 
@@ -354,7 +362,8 @@ bit-identical. The weights at `inference/gate/weights/` are the published
 `full_reaxys_model_2048bool` checkpoint from
 [connorcoley/scscore](https://github.com/connorcoley/scscore) (MIT). That
 repository's `full_reaxys_model_1024bool` checkpoint is a *different* model and
-cannot be substituted: the gate scores with `FP_len=2048`.
+cannot be substituted for the gate checkpoint: the gate scores with
+`FP_len=2048`.
 
 ```bibtex
 @article{song2025aotstar,
