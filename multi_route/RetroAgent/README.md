@@ -24,7 +24,7 @@ documents the original release.
 **Single-step inference with the template gate (our addition)**
 
 1. [What we added](#what-we-added)
-2. [Assets you must provide](#assets-you-must-provide)
+2. [Assets](#assets)
 3. [Quick start](#quick-start)
 4. [Configurations](#configurations)
 5. [Environment variables](#environment-variables)
@@ -78,16 +78,18 @@ reranking (`ranking: none` keeps the original order).
 > Megatron checkpoint, no training stack is needed for anything in this half
 > of the README.
 
-## Assets you must provide
+## Assets
 
-None of these are in the repository. Fill them in `.env`
-(copy `.env.example`) and every config picks them up.
+The runtime assets, planner and step-model weights are external. Fill their
+paths in `.env` (copy `.env.example`) and every config picks them up. The
+SCScore checkpoints are vendored as noted below.
 
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
-| Runtime assets | — | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | Download to `DianShi-RetroRoute-Dataset/`; brings the template library, the building-block stock, the tool-server SCScore and the target sets. Place the files as described in its `README.md`. |
+| Runtime assets | — | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | Download to `DianShi-RetroRoute-Dataset/`; brings the template library, the building-block stock and the target sets. Place the files as described in its `README.md`. |
 | rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
 | Building blocks | `STARTING_MOLECULES` | in the dataset: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
+| SCScore (tool server, 1024-bit) | — | vendored at `datasets/scscore/model.ckpt-10654.as_numpy.json.gz` | Loaded by `calculate_scscore`; no download. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
 | Step-model weights | `SINGLE_STEP_MODEL_PATH` | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) | Served separately from the planner. |
 
@@ -108,12 +110,10 @@ pip install -r requirements.txt           # tool server + eval driver (host pyth
 # serving additionally needs vLLM (>= 0.18; validated with 0.26) on the GPU
 # machine -- install it there; the serve scripts only need `vllm` on PATH
 
-# 1. download the runtime assets (from the repo root; see "Assets you must provide")
+# 1. download the runtime assets (from the repo root; see "Assets")
 hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
 mkdir -p dataset
 cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/   # tool-server default path
-mkdir -p datasets/scscore
-cp DianShi-RetroRoute-Dataset/scscore/model.ckpt-10654.as_numpy.json.gz datasets/scscore/
 cp .env.example .env && $EDITOR .env      # asset paths, endpoints, credentials
 
 # 2. serve the planner (the policy)          -> $PLANNER_BASE_URL
@@ -377,8 +377,10 @@ original on ten molecules including edge cases, and the values are
 bit-identical. The weights at `inference/gate/weights/` are the published
 `full_reaxys_model_2048bool` checkpoint from
 [connorcoley/scscore](https://github.com/connorcoley/scscore) (MIT). That
-repository's `full_reaxys_model_1024bool` checkpoint is a *different* model and
-cannot be substituted: the gate scores with `FP_len=2048`.
+repository's `full_reaxys_model_1024bool` checkpoint is a *different* model:
+it is the 1024-bit checkpoint used by the tool server's `calculate_scscore`,
+but it cannot be substituted for the gate checkpoint, which scores with
+`FP_len=2048`.
 
 ```bibtex
 @article{song2025aotstar,

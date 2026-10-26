@@ -12,7 +12,7 @@ Single-step retrosynthesis evaluation and multi-step synthesis-route planning wi
 | Resource | Link | Contents |
 |---|---|---|
 | Model | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) | Single-step retrosynthesis model (Qwen3-4B fine-tuned, no retrieval) |
-| Dataset | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | Multi-step runtime assets: rdchiral template library, eMolecules building-block stock, SCScore checkpoint, and the USPTO-190 / Pistachio-100 / PatMol-150 target sets |
+| Dataset | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | Multi-step runtime assets: rdchiral template library, eMolecules building-block stock, and the USPTO-190 / Pistachio-100 / PatMol-150 target sets |
 
 ~~~bash
 # Single-step: the default --model-path of scripts/infer_beam_search.sh
@@ -182,9 +182,9 @@ For the template-gate contract and parameters, see [VALIDATE.md](multi_route/Dia
 | rdchiral template library | Set `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` to `DianShi-RetroRoute-Dataset/rxn_template/rdchiral_res_rxn_temp_count.jsonl`. |
 | Purchasable building-block stock | Set `STARTING_MOLECULES` to the standardized eMolecules SQLite file; pass `--starting_molecules` explicitly when running Retro-R1. |
 | Target molecules | Provide one target SMILES per line. The benchmark target paths are listed below. |
-| AOT* SCScore weights | The 2048-bit checkpoint is included under both forks' `inference/gate/weights/`. Preview expects a copy under `runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/`; the example below prepares it. RetroAgent also needs the tool-server SCScore asset described in its guide. |
+| AOT* SCScore weights | The 2048-bit gate checkpoint is included with each framework's gate assets. The 1024-bit tool-server checkpoint is vendored under `RetroAgent/datasets/scscore/`. Neither needs an extra download or copy. |
 
-The template library, stock database, SCScore checkpoint, and target files are published as the Hugging Face dataset [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset). Download it into the selected framework directory as `DianShi-RetroRoute-Dataset/`, place assets according to the selected framework's guide, then copy its `.env.example` to `.env` and configure model paths, endpoint URLs, and API keys.
+The template library, stock database, and target files are published as the Hugging Face dataset [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset). Download it into the selected framework directory as `DianShi-RetroRoute-Dataset/`, place assets according to the selected framework's guide, then copy its `.env.example` to `.env` and configure model paths, endpoint URLs, and API keys.
 
 ### Target sets
 
@@ -208,11 +208,6 @@ python3 -m pip install -r requirements.txt
 
 # Download the runtime assets into this framework directory.
 hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
-
-# Place the repository's existing 2048-bit SCScore checkpoint where Preview expects it.
-mkdir -p runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool
-cp ../RetroAgent/inference/gate/weights/model.ckpt-10654.as_numpy.json.gz \
-  runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/
 
 cp .env.example .env
 # Edit .env: set SINGLE_STEP_MODEL_PATH, planner/step URLs, keys, and asset paths.
@@ -244,14 +239,13 @@ The supplied benchmark YAMLs enable the template gate and set `max_steps: 500`, 
 
 First follow the corresponding framework guide to install its dependencies, prepare its assets and `.env`, and start the planner and single-step services. Then run one of these commands from the repository root:
 
-RetroAgent's tool server loads two assets from fixed relative paths, so place them before the first run:
+RetroAgent's tool server loads the stock from a fixed relative path, so place it before the first run:
 
 ~~~bash
 (
   cd multi_route/RetroAgent
-  mkdir -p dataset datasets/scscore
+  mkdir -p dataset
   cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/
-  cp DianShi-RetroRoute-Dataset/scscore/model.ckpt-10654.as_numpy.json.gz datasets/scscore/
 )
 ~~~
 

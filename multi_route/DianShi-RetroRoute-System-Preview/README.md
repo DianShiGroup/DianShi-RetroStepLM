@@ -200,7 +200,9 @@ PYTHONPATH=. python -m pytest -q
 The AOT\* SCScore NumPy implementation and the 2048-bit checkpoint are vendored
 from [connorcoley/scscore](https://github.com/connorcoley/scscore) (MIT); the
 gate's reranking is adapted from
-[AOT\*](https://github.com/ShawnKS/AOTstar) (Song et al., 2025). Template
+[AOT\*](https://github.com/ShawnKS/AOTstar) (Song et al., 2025). The gate
+explicitly restores the 2048-bit checkpoint (`FP_len=2048`); do not swap in the
+same-named 1024-bit checkpoint used by the RetroAgent tool server. Template
 application uses [rdchiral](https://github.com/coleygroup/rdchiral) (installed
 from PyPI). Building-block data derives from eMolecules and
 [Retro\*](https://github.com/binghong-ml/retro_star) — cite the upstream works

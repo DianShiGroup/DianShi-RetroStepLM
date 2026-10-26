@@ -12,7 +12,7 @@
 | 资源 | 链接 | 内容 |
 |---|---|---|
 | 模型 | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) | 单步逆合成模型（基于 Qwen3-4B 微调，不使用检索） |
-| 数据集 | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | 多步规划运行资源：rdchiral 模板库、eMolecules 砌块库存、SCScore checkpoint，以及 USPTO-190 / Pistachio-100 / PatMol-150 目标集 |
+| 数据集 | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | 多步规划运行资源：rdchiral 模板库、eMolecules 砌块库存，以及 USPTO-190 / Pistachio-100 / PatMol-150 目标集 |
 
 ~~~bash
 # 单步：scripts/infer_beam_search.sh 的默认 --model-path
@@ -182,9 +182,9 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 | rdchiral 模板库 | 把 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` 设为 `DianShi-RetroRoute-Dataset/rxn_template/rdchiral_res_rxn_temp_count.jsonl`。 |
 | 可购砌块库存 | 把 `STARTING_MOLECULES` 设为标准化的 eMolecules SQLite 文件；运行 Retro-R1 时需显式传 `--starting_molecules`。 |
 | 目标分子 | 每行一个目标 SMILES。评测目标路径见下文。 |
-| AOT* SCScore 权重 | 2048-bit checkpoint 已包含在两个 fork 的 `inference/gate/weights/` 下。Preview 需要在 `runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/` 下放一份副本，下面的示例会完成这一步。RetroAgent 还需要其说明中提到的 tool-server SCScore 资源。 |
+| AOT* SCScore 权重 | 2048-bit gate checkpoint 已随每个框架的 gate 代码一起提供；1024-bit tool-server checkpoint 已 vendored 在 `RetroAgent/datasets/scscore/` 下，不需要额外下载或复制。 |
 
-模板库、库存数据库、SCScore checkpoint 和目标文件已发布为 Hugging Face 数据集 [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset)。把它下载到所选框架目录下的 `DianShi-RetroRoute-Dataset/`，按所选框架的说明放置资源，然后把其 `.env.example` 复制为 `.env`，配置模型路径、接口 URL 和 API key。
+模板库、库存数据库和目标文件已发布为 Hugging Face 数据集 [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset)。把它下载到所选框架目录下的 `DianShi-RetroRoute-Dataset/`，按所选框架的说明放置资源，然后把其 `.env.example` 复制为 `.env`，配置模型路径、接口 URL 和 API key。
 
 ### 目标集
 
@@ -208,11 +208,6 @@ python3 -m pip install -r requirements.txt
 
 # 把运行资源下载到该框架目录。
 hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
-
-# 把仓库中已有的 2048-bit SCScore checkpoint 放到 Preview 期望的位置。
-mkdir -p runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool
-cp ../RetroAgent/inference/gate/weights/model.ckpt-10654.as_numpy.json.gz \
-  runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/
 
 cp .env.example .env
 # 编辑 .env：设置 SINGLE_STEP_MODEL_PATH、planner/单步模型的 URL、key 和资源路径。
@@ -244,14 +239,13 @@ python3 cli.py --config configs/bench/qwen_direct_pistachio100.yaml
 
 先按对应框架说明安装依赖、准备资源和 `.env`，并启动 planner 与单步模型服务。然后在仓库根目录运行以下任一命令：
 
-RetroAgent 的 tool server 会从固定的相对路径加载两个资源，首次运行前请先放好：
+RetroAgent 的 tool server 会从固定的相对路径加载库存，首次运行前请先放好：
 
 ~~~bash
 (
   cd multi_route/RetroAgent
-  mkdir -p dataset datasets/scscore
+  mkdir -p dataset
   cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/
-  cp DianShi-RetroRoute-Dataset/scscore/model.ckpt-10654.as_numpy.json.gz datasets/scscore/
 )
 ~~~
 

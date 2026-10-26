@@ -28,6 +28,21 @@ configurations are the ones the released numbers were produced with.
    ID directly (it downloads on first use), or you can pre-download it with
    `huggingface-cli download`.
 
+## SCScore checkpoints
+
+Two checkpoints share the filename `model.ckpt-10654.as_numpy.json.gz` but are
+different models. Do not swap them:
+
+| Consumer | Fingerprint width | Checkpoint |
+|---|---:|---|
+| AOT\* template gate in RetroAgent | 2048 | `RetroAgent/inference/gate/weights/` |
+| AOT\* template gate in Preview | 2048 | `DianShi-RetroRoute-System-Preview/runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/` |
+| RetroAgent tool server (`calculate_scscore`) | 1024 | `RetroAgent/datasets/scscore/` |
+
+The gate passes `FP_len=2048`; the tool server hardcodes `FP_len=1024`. Both
+checkpoints are vendored in the code repository, and the runtime-assets dataset
+does not contain either SCScore checkpoint.
+
 ## The three frameworks
 
 | Folder | Lineage | Search harness | Planner |
