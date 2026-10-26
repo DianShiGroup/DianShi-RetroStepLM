@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the sl_cot evaluation datasets under ``model_tests``.
+"""Build the intermediate-label evaluation datasets under ``model_tests``.
 
 The directory and file names intentionally match the established
 ``model_tests`` layout.  All repository paths are derived from this file, so
@@ -25,17 +25,18 @@ ROOT = PACKAGE_DIR.parents[1]
 PROMPT_DIR = PACKAGE_DIR / "prompts"
 OUT_ROOT = ROOT / "model_tests"
 
+PATENT_DIR = ROOT / "datasets/DianShi-PatentRxnStep-Dataset"
 SOURCE_SPECS = (
-    ("test_in", "test", ROOT / "datasets/DianShi-RxnStep-dataset/DianShi-RxnStep-Test-IN.jsonl"),
-    ("test_in", "val", ROOT / "datasets/DianShi-RxnStep-dataset/DianShi-RxnStep-Val-IN.jsonl"),
-    ("test_out", "test", ROOT / "datasets/DianShi-RxnStep-dataset/DianShi-RxnStep-Test-OUT.jsonl"),
-    ("test_out", "val", ROOT / "datasets/DianShi-RxnStep-dataset/DianShi-RxnStep-Val-OUT.jsonl"),
+    ("test_2001_2024", "test", PATENT_DIR / "DianShi-PatentRxnStep-Test-2001-2024.jsonl"),
+    ("test_2001_2024", "val", PATENT_DIR / "DianShi-PatentRxnStep-Val-2001-2024.jsonl"),
+    ("test_2025", "test", PATENT_DIR / "DianShi-PatentRxnStep-Test-2025.jsonl"),
+    ("test_2025", "val", PATENT_DIR / "DianShi-PatentRxnStep-Val-2025.jsonl"),
     ("uspto_50k", "test", ROOT / "datasets/USPTO-50K/raw_test.jsonl"),
     ("uspto_50k", "val", ROOT / "datasets/USPTO-50K/raw_val.jsonl"),
 )
 
 PROMPTS = {
-    "sl_cot": PROMPT_DIR / "prompt_sft_sl_cot.txt",
+    "intermediate_label": PROMPT_DIR / "prompt_sft_intermediate_label.txt",
 }
 
 SPLIT_PREFIX = {"test": "testset", "val": "validationset"}
@@ -87,12 +88,14 @@ class Unit:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build sl_cot model-test JSONL and Hugging Face cached datasets."
+        description=(
+            "Build intermediate-label model-test JSONL and Hugging Face cached datasets."
+        )
     )
     parser.add_argument(
         "--datasets",
         default="",
-        help="Comma-separated dataset names: test_in,test_out,uspto_50k.",
+        help="Comma-separated dataset names: test_2001_2024,test_2025,uspto_50k.",
     )
     parser.add_argument(
         "--splits", default="", help="Comma-separated splits: test,val."
@@ -116,7 +119,8 @@ def display_path(path: Path) -> str:
 
 
 def make_variants() -> dict[str, Variant]:
-    return {"sl_cot": Variant("sl_cot", "sl_cot", "sl_cot", "sl_cot")}
+    key = "intermediate_label"
+    return {key: Variant(key, key, key, key)}
 
 
 def discover_sources() -> dict[str, dict[str, Path]]:

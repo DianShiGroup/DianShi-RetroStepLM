@@ -3,24 +3,27 @@
 This folder hosts three independent multi-route retrosynthesis planning
 frameworks. All three drive the same search recipe: an LLM planner explores a
 tree or graph of molecules and reactions, proposes disconnections with the
-**DianShi direct single-step model** (the model released in this repository —
+**DianShi-RetroStepLM-Direct single-step model** (the model released in this repository —
 see the root README), and every candidate must pass the **AOT\*
-reaction-template gate** before it enters the search. The shipped
+reaction-template gate** (AOT\*-style template-based reaction validation in the
+paper) before it enters the search. The shipped
 configurations are the ones the released numbers were produced with.
 
 ## The shared recipe
 
-1. **Direct single-step model.** `DianShi-RetroStep-Direct` behind an
+1. **Direct single-step model.** `DianShi-RetroStepLM-Direct` behind an
    OpenAI-compatible `/v1/chat/completions` endpoint. There is **no
    retrieval** — the model answers from its parameters alone.
 2. **AOT\* template gate.** rdchiral template *application* (with a blurry
    second pass), then SCScore reranking; reactants outside the purchasable
    stock carry an `unsolved_penalty`.
 3. **Purchasable building-block stock.** A standardized eMolecules sqlite
-   (23M entries) used for exact canonical-SMILES availability checks.
+   (23,081,629 entries) used for exact canonical-SMILES availability checks.
+   The stock comes from the Retro\* eMolecules building-block list, standardized
+   with RDKit 2025.9.5, and then converted to SQLite.
 4. **Runtime assets.** The rdchiral template library, the stock sqlite and the
    target sets are published as the Hugging Face dataset
-   [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset);
+   [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets);
    each component README's assets table says where to place them.
 
 5. **Planner.** [Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8)
@@ -36,7 +39,7 @@ different models. Do not swap them:
 | Consumer | Fingerprint width | Checkpoint |
 |---|---:|---|
 | AOT\* template gate in RetroAgent | 2048 | `RetroAgent/inference/gate/weights/` |
-| AOT\* template gate in Preview | 2048 | `DianShi-RetroRoute-System-Preview/runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/` |
+| AOT\* template gate in DianShi-RetroPlanSystem-v0 | 2048 | `DianShi-RetroPlanSystem-v0/runtime/single_step/aot_scscore/models/full_reaxys_model_2048bool/` |
 | RetroAgent tool server (`calculate_scscore`) | 1024 | `RetroAgent/datasets/scscore/` |
 
 The gate passes `FP_len=2048`; the tool server hardcodes `FP_len=1024`. Both
@@ -49,7 +52,7 @@ does not contain either SCScore checkpoint.
 |---|---|---|---|
 | [`RetroAgent/`](RetroAgent/README.md) | fork of [SXKDZ/RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) (COLM 2026) | HTTP tool server + AND-OR `GraphMemory` harness; agent issues tool calls | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
 | [`Retro-R1-modified/`](Retro-R1-modified/README.md) | fork of [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) (NeurIPS 2025) | in-process `CALL` / `SELECT` agent loop | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
-| [`DianShi-RetroRoute-System-Preview/`](DianShi-RetroRoute-System-Preview/README.md) | original in-process bench harness | AND-OR colony dispatcher + workers, JSONL output | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
+| [`DianShi-RetroPlanSystem-v0/`](DianShi-RetroPlanSystem-v0/README.md) | original in-process bench harness | AND-OR colony dispatcher + workers, JSONL output | [Qwen3.5-397B](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) |
 
 Each folder is fully self-contained: its own README (quick start, assets
 table, configuration reference), `requirements.txt`, serve scripts,
@@ -64,13 +67,13 @@ target file is a runtime input, not a step-model setting:
 
 | Dataset | Targets | Target file |
 |---|---|---:|
-| Pistachio-100 | 100 | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` |
-| USPTO-190 | 190 | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` |
-| PatMol-150 | 150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` |
+| Pistachio Hard | 100 | `DianShi-RetroPlanSystem-Assets/test_dataset/pistachio_hard_tree.txt` |
+| USPTO-190 | 190 | `DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt` |
+| PatMol-150 | 150 | `DianShi-RetroPlanSystem-Assets/test_dataset/patmol_150_targets.txt` |
 
 RetroAgent and Retro-R1-modified ship one `configs/dianshi_direct.yaml` and
 select the target set with `--targets` / `--data_file`; they do not need
-three dataset-specific configs. DianShi-RetroRoute-System-Preview ships one
+three dataset-specific configs. DianShi-RetroPlanSystem-v0 ships one
 lane config per benchmark because its batch runner also fixes the input and
 output paths.
 
@@ -89,7 +92,7 @@ three-step flow: environment, assets + `.env`, serve + evaluate.
 ## Result statistics
 
 `tools/solved_by_n.py` computes solve rates at N = 50, 100, 200, 300, 400 and
-500 from any of the three result formats. It auto-detects bench_v1 / Preview
+500 from any of the three result formats. It auto-detects DianShi-RetroPlanSystem-v0
 JSONL, Retro-R1 `result.jsonl`, and RetroAgent `summary.json`:
 
 ```bash
@@ -109,7 +112,7 @@ reported rates, so a rerun is required before those numbers are used.
 - **Retro-R1-modified** — upstream: Retro-R1 (NeurIPS 2025, MIT); the direct
   single-step backend and the template gate are the addition. Bibtex in its
   README.
-- **DianShi-RetroRoute-System-Preview** — original evaluation harness.
+- **DianShi-RetroPlanSystem-v0** — original evaluation harness.
 
 Please cite the upstream works you use; attribution for the vendored AOT\*
 scScore (connorcoley/scscore, MIT) and rdchiral is in each component README.

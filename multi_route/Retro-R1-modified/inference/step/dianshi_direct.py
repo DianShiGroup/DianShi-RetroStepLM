@@ -1,5 +1,5 @@
 """
-DianShi direct single-step tool: an OpenAI-compatible HTTP step model with the
+DianShi-RetroStepLM-Direct single-step tool: an OpenAI-compatible HTTP step model with the
 rdchiral/AOT* template gate, no retrieval.
 """
 

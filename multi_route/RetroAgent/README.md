@@ -86,12 +86,12 @@ SCScore checkpoints are vendored as noted below.
 
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
-| Runtime assets | — | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | Download to `DianShi-RetroRoute-Dataset/`; brings the template library, the building-block stock and the target sets. Place the files as described in its `README.md`. |
+| Runtime assets | — | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Download to `DianShi-RetroPlanSystem-Assets/`; brings the template library, the building-block stock and the target sets. Place the files as described in its `README.md`. |
 | rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
-| Building blocks | `STARTING_MOLECULES` | in the dataset: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. |
+| Building blocks | `STARTING_MOLECULES` | in the dataset: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. 23,081,629 molecules. The stock comes from the Retro* eMolecules building-block list, standardized with RDKit 2025.9.5, and then converted to SQLite. |
 | SCScore (tool server, 1024-bit) | — | vendored at `datasets/scscore/model.ckpt-10654.as_numpy.json.gz` | Loaded by `calculate_scscore`; no download. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
-| Step-model weights | `SINGLE_STEP_MODEL_PATH` | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) | Served separately from the planner. |
+| Step-model weights | `SINGLE_STEP_MODEL_PATH` | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | Served separately from the planner. |
 
 The rdchiral template library resolves as explicit config value >
 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL`, and a fresh clone that has neither set gets an
@@ -111,9 +111,9 @@ pip install -r requirements.txt           # tool server + eval driver (host pyth
 # machine -- install it there; the serve scripts only need `vllm` on PATH
 
 # 1. download the runtime assets (from the repo root; see "Assets")
-hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
+hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 mkdir -p dataset
-cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/   # tool-server default path
+cp DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite dataset/   # tool-server default path
 cp .env.example .env && $EDITOR .env      # asset paths, endpoints, credentials
 
 # 2. serve the planner (the policy)          -> $PLANNER_BASE_URL
@@ -128,16 +128,16 @@ bash scripts/serve_single_step.sh         # serves $SINGLE_STEP_MODEL_PATH
 # 4. run one evaluation
 bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
-    --targets DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt
+    --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt
 ```
 
 The same direct config serves all three target sets; only `--targets` changes:
 
 | Dataset | Targets | Target file |
 |---|---|---:|
-| Pistachio-100 | 100 | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` |
-| USPTO-190 | 190 | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` |
-| PatMol-150 | 150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` |
+| Pistachio Hard | 100 | `DianShi-RetroPlanSystem-Assets/test_dataset/pistachio_hard_tree.txt` |
+| USPTO-190 | 190 | `DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt` |
+| PatMol-150 | 150 | `DianShi-RetroPlanSystem-Assets/test_dataset/patmol_150_targets.txt` |
 
 A dataset-specific config is not needed: the step model, gate and search
 protocol are identical, and the target set is selected at runtime.

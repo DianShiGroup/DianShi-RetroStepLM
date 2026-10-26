@@ -1,15 +1,16 @@
-# Dianshi-Retro Bench
+# DianShi-RetroPlanSystem-v0
 
 A standalone evaluation framework for multi-step retrosynthetic planning. A
 planner LLM searches over an AND–OR tree of molecules and reactions, calling a
 single-step retrosynthesis model through an OpenAI-compatible API; every
 candidate reaction must pass an **AOT\* reaction-template gate** — rdchiral
-template application plus SCScore reranking — before it enters the search. The
+template application plus SCScore reranking, the AOT\*-style template-based
+reaction validation described in the paper — before it enters the search. The
 search ends when the target molecule is decomposed into purchasable building
 blocks or the single-step budget is exhausted.
 
 The configuration shipped in this repository is the one the released numbers
-were produced with: **Qwen3.5-397B as the planner, DianShi-RetroStep-LM-Direct
+were produced with: **Qwen3.5-397B as the planner, DianShi-RetroStepLM-Direct
 as the single-step model, AOT\* gate on**. Only what that reproduction needs is
 included here; other single-step backends (RAG, RSGPT, RXNGraphormer), other
 gate variants and historical experiment configs are not part of this release.
@@ -85,9 +86,13 @@ becomes SOLVED with `search.target_complete_paths` complete routes.
 
 | Asset | Source |
 |---|---|
-| Runtime assets (rdchiral template library, building-block stock, target sets) | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) |
+| Runtime assets (rdchiral template library, building-block stock, target sets) | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) |
 | Planner weights (Qwen3.5-397B-A17B-FP8) | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) — vLLM can serve the repo ID directly (it downloads on first use), or pre-download with `huggingface-cli download`. |
-| Step-model weights (DianShi-RetroStep-LM-Direct) | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) |
+| Step-model weights (DianShi-RetroStepLM-Direct) | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) |
+
+The building-block stock holds 23,081,629 molecules. It comes from the Retro\*
+eMolecules building-block list, standardized with RDKit 2025.9.5, and then
+converted to SQLite.
 
 The SCScore NumPy implementation and the 2048-bit checkpoint used by the AOT\*
 gate are vendored in `runtime/single_step/aot_scscore/` — no extra download.
@@ -101,11 +106,11 @@ pip install -r requirements.txt
 # machine.
 
 # 1. Download the runtime assets, then set up .env
-hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
+hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 cp .env.example .env && $EDITOR .env
-#    Defaults point at ./DianShi-RetroRoute-Dataset/... for the template library, the stock
+#    Defaults point at ./DianShi-RetroPlanSystem-Assets/... for the template library, the stock
 #    and the target files. The lane configs read targets from
-#    ./DianShi-RetroRoute-Dataset/test_dataset/; edit the lane yaml if you downloaded elsewhere.
+#    ./DianShi-RetroPlanSystem-Assets/test_dataset/; edit the lane yaml if you downloaded elsewhere.
 #    At startup the gate should log: stock=23081629 | templates=412027.
 ```
 
@@ -120,7 +125,7 @@ bash scripts/serve_single_step.sh      # step model, plain vLLM
 
 # 3. Run an evaluation (CPU is enough; runs in-process)
 python cli.py --config configs/bench/qwen_direct_uspto190.yaml
-python cli.py --config configs/bench/qwen_direct_pistachio100.yaml
+python cli.py --config configs/bench/qwen_direct_pistachio_hard.yaml
 python cli.py --config configs/bench/qwen_direct_patmol_150.yaml
 ```
 
@@ -130,12 +135,12 @@ Three lanes ship, one per benchmark set:
 
 | Config | Benchmark | Target file | Targets |
 |---|---|---|---:|
-| `qwen_direct_uspto190.yaml` | USPTO-190 (public) | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` | 190 |
-| `qwen_direct_pistachio100.yaml` | Pistachio hard-tree 100 (public) | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` | 100 |
-| `qwen_direct_patmol_150.yaml` | PatMol-150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` | 150 |
+| `qwen_direct_uspto190.yaml` | USPTO-190 (public) | `DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt` | 190 |
+| `qwen_direct_pistachio_hard.yaml` | Pistachio Hard (public) | `DianShi-RetroPlanSystem-Assets/test_dataset/pistachio_hard_tree.txt` | 100 |
+| `qwen_direct_patmol_150.yaml` | PatMol-150 | `DianShi-RetroPlanSystem-Assets/test_dataset/patmol_150_targets.txt` | 150 |
 
 The lane configs read target files directly from
-`DianShi-RetroRoute-Dataset/test_dataset/`. `run.output` and `log_file` differ per
+`DianShi-RetroPlanSystem-Assets/test_dataset/`. `run.output` and `log_file` differ per
 lane. Endpoints and asset paths are set in `.env`; global defaults live in
 `config.yaml`.
 

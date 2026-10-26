@@ -2,28 +2,28 @@
 
 [English](README.md) | 中文
 
-基于 **DianShi-RetroStep-LM-Direct** 的单步逆合成评测与多步合成路线规划。
+基于 **DianShi-RetroStepLM-Direct** 的单步逆合成评测与多步合成路线规划。
 
-- **单步评测：** 从 DianShi-RxnStep 和 USPTO-50K 构建 `sl_cot`（逐步思维链）测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。
-- **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买砌块的路线，结合 direct 模型、rdchiral 模板应用和 AOT* SCScore 重排。
+- **单步评测：** 从 DianShi-PatentRxnStep-Dataset 和 USPTO-50K 构建 intermediate-label 测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。提示词要求模型依次给出合成子（synthon）、离去基团（leaving group）和最终反应物，即模型训练所用的 intermediate-label 格式。
+- **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买砌块的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
 
 ## Hugging Face 资源
 
 | 资源 | 链接 | 内容 |
 |---|---|---|
-| 模型 | [DianShiGroup/DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) | 单步逆合成模型（基于 Qwen3-4B 微调，不使用检索） |
-| 数据集 | [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset) | 多步规划运行资源：rdchiral 模板库、eMolecules 砌块库存，以及 USPTO-190 / Pistachio-100 / PatMol-150 目标集 |
+| 模型 | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | 单步逆合成模型（基于 Qwen3-4B-Base 微调，不使用检索） |
+| 数据集 | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | 多步规划运行资源：rdchiral 模板库、eMolecules 砌块库存，以及 USPTO-190 / Pistachio Hard / PatMol-150 目标集 |
 
 ~~~bash
 # 单步：scripts/infer_beam_search.sh 的默认 --model-path
-hf download DianShiGroup/DianShi-RetroStep-LM-Direct --local-dir models/DianShi-RetroStep-Direct
+hf download DianShiGroup/DianShi-RetroStepLM-Direct --local-dir models/DianShi-RetroStepLM-Direct
 
 # 多步：在所选框架目录下运行
-cd multi_route/DianShi-RetroRoute-System-Preview
-hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
+cd multi_route/DianShi-RetroPlanSystem-v0
+hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 ~~~
 
-单步脚本和多步框架也可以直接使用模型 ID `DianShiGroup/DianShi-RetroStep-LM-Direct`，vLLM 会在首次使用时自动下载。
+单步脚本和多步框架也可以直接使用模型 ID `DianShiGroup/DianShi-RetroStepLM-Direct`，vLLM 会在首次使用时自动下载。
 
 ## 快速入口
 
@@ -39,23 +39,24 @@ hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-
 ~~~text
 DianShi-RetroStep/
   datasets/
-    DianShi-RxnStep-dataset/      Test-IN、Test-OUT、Val-IN、Val-OUT 划分
+    DianShi-PatentRxnStep-Dataset/
+                                  Test-2001-2024、Test-2025、Val-2001-2024、Val-2025
     USPTO-50K/                    原始 train、validation、test 划分
   multi_route/
     RetroAgent/                   带 AND-OR 图记忆的工具调用式 planner
     Retro-R1-modified/            CALL / SELECT 规划环境
-    DianShi-RetroRoute-System-Preview/
-                                  AND-OR 树调度器与评测 CLI
+    DianShi-RetroPlanSystem-v0/   AND-OR 树调度器与评测 CLI
     tools/solved_by_n.py          三种结果格式通用的求解率统计
     README.md                     多步框架总览
   scripts/
-    build_model_tests.sh          构建 sl_cot 评测数据集
+    build_model_tests.sh          构建 intermediate-label 评测数据集
     infer_beam_search.sh          束搜索推理 + 评测
   src/dianshi_retrostep/
     data/                         数据集构建、atom-wise SMILES 转换
     inference/                    多 GPU vLLM 束搜索
     evaluation/                   Top-k 精确匹配评测
-    prompts/prompt_sft_sl_cot.txt sl_cot 提示词模板
+    prompts/prompt_sft_intermediate_label.txt
+                                  intermediate-label 提示词模板
   pyproject.toml
   requirements.txt
 ~~~
@@ -79,16 +80,16 @@ python3 -m pip install -e .   # 可选：不经 shell 脚本直接运行模块
 
 源数据和提示词模板已包含在仓库中：
 
-- `datasets/DianShi-RxnStep-dataset`：Test-IN、Test-OUT、Val-IN、Val-OUT。
+- `datasets/DianShi-PatentRxnStep-Dataset`：四个评测分区。Test-2001-2024 与 Val-2001-2024（各 3,798 条反应）覆盖 2001–2024 年记录的反应；Test-2025 与 Val-2025（各 1,886 条反应）为时间外推集，全部为 2025 年记录的反应。
 - `datasets/USPTO-50K`：原始 train、validation、test 划分；构建时使用 validation 和 test。
 
-构建在 CPU 上运行：
+构建在 CPU 上运行。`--datasets` 可取 `test_2001_2024`、`test_2025` 或 `uspto_50k`，每个都会构建其 test 与 validation 分区：
 
 ~~~bash
 scripts/build_model_tests.sh                                   # 全部数据集和划分
 scripts/build_model_tests.sh --dry-run                         # 只打印构建计划
-scripts/build_model_tests.sh --datasets test_out --splits test
-scripts/build_model_tests.sh --datasets test_in,test_out,uspto_50k --splits test,val
+scripts/build_model_tests.sh --datasets test_2025 --splits test
+scripts/build_model_tests.sh --datasets test_2001_2024,test_2025,uspto_50k --splits test,val
 scripts/build_model_tests.sh --force                           # 重建已有输出
 ~~~
 
@@ -96,32 +97,32 @@ scripts/build_model_tests.sh --force                           # 重建已有输
 
 ~~~text
 model_tests/
-  test_in/sl_cot/
-    testset_sl_cot/                   JSONL
-    testset_sl_cot_new_cached/        Hugging Face 缓存数据集
-    validationset_sl_cot/
-    validationset_sl_cot_new_cached/
-  test_out/sl_cot/...
-  uspto_50k/sl_cot/...
+  test_2001_2024/intermediate_label/
+    testset_intermediate_label/                   JSONL
+    testset_intermediate_label_new_cached/        Hugging Face 缓存数据集
+    validationset_intermediate_label/
+    validationset_intermediate_label_new_cached/
+  test_2025/intermediate_label/...
+  uspto_50k/intermediate_label/...
 ~~~
 
 ### 束搜索推理与评测
 
-`scripts/infer_beam_search.sh` 在 `sl_cot` 缓存数据集上运行 vLLM 束搜索，然后打印 Top-k 精确匹配准确率。可以直接传 Hugging Face 模型 ID，vLLM 会在首次使用时下载权重：
+`scripts/infer_beam_search.sh` 在 intermediate-label 缓存数据集上运行 vLLM 束搜索，然后打印 Top-k 精确匹配准确率。可以直接传 Hugging Face 模型 ID，vLLM 会在首次使用时下载权重：
 
 ~~~bash
 scripts/infer_beam_search.sh \
-  --model-path DianShiGroup/DianShi-RetroStep-LM-Direct \
-  --data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
+  --model-path DianShiGroup/DianShi-RetroStepLM-Direct \
+  --data-path model_tests/test_2025/intermediate_label/testset_intermediate_label_new_cached \
   --num-gpus 8 \
   --batch-size 512
 ~~~
 
-`--model-path` 也可以是本地目录，默认值为 `models/DianShi-RetroStep-Direct`。评测其他划分时，把对应缓存目录传给 `--data-path`，例如 `model_tests/test_in/sl_cot/testset_sl_cot_new_cached` 或 `model_tests/uspto_50k/sl_cot/testset_sl_cot_new_cached`。
+`--model-path` 也可以是本地目录，默认值为 `models/DianShi-RetroStepLM-Direct`。评测其他划分时，把对应缓存目录传给 `--data-path`，例如 `model_tests/test_2001_2024/intermediate_label/testset_intermediate_label_new_cached` 或 `model_tests/uspto_50k/intermediate_label/testset_intermediate_label_new_cached`。不传 `--output-path` 时，结果写到 `results/<模型>_<数据集>_<划分>_beam<宽度>.jsonl`，每个测试集各有一个文件。
 
 | 选项 | 默认值 |
 |---|---|
-| `--data-path` | `model_tests/test_out/sl_cot/testset_sl_cot_new_cached` |
+| `--data-path` | `model_tests/test_2025/intermediate_label/testset_intermediate_label_new_cached` |
 | `--output-dir` | `results` |
 | `--num-gpus` / `--batch-size` | `1` / `128` |
 | `--beam-width` / `--max-tokens` | `10` / `1024` |
@@ -137,16 +138,16 @@ scripts/infer_beam_search.sh \
 
 ~~~bash
 python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
-  --model-path DianShiGroup/DianShi-RetroStep-LM-Direct \
-  --cached-data-path model_tests/test_out/sl_cot/testset_sl_cot_new_cached \
-  --output-path results/sl_cot_test_out_beam10.jsonl \
+  --model-path DianShiGroup/DianShi-RetroStepLM-Direct \
+  --cached-data-path model_tests/test_2025/intermediate_label/testset_intermediate_label_new_cached \
+  --output-path results/test_2025_intermediate_label_beam10.jsonl \
   --num-gpus 1 \
   --beam-width 10
 
 python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
-  results/sl_cot_test_out_beam10.jsonl \
+  results/test_2025_intermediate_label_beam10.jsonl \
   --ks 1 3 5 10 \
-  --output-json results/sl_cot_test_out_beam10_metrics.json
+  --output-json results/test_2025_intermediate_label_beam10_metrics.json
 ~~~
 
 ## 多步路线规划
@@ -155,36 +156,36 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 
 ### 框架
 
-三个框架可以独立运行。随附的 direct 配置使用 [Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) 作为 planner，[DianShi-RetroStep-LM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStep-LM-Direct) 作为单步模型。
+三个框架可以独立运行。随附的 direct 配置使用 [Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) 作为 planner，[DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) 作为单步模型。
 
 | 框架 | 搜索接口 | 安装与配置 |
 |---|---|---|
 | RetroAgent | Agent 调用由 HTTP 服务和 AND-OR `GraphMemory` 支撑的工具 | [RetroAgent 说明](multi_route/RetroAgent/README.md) |
 | Retro-R1-modified | 进程内 agent 用 `CALL` 请求候选、用 `SELECT` 应用其中一个 | [Retro-R1 说明](multi_route/Retro-R1-modified/README.md) |
-| DianShi-RetroRoute-System-Preview | 调度器向 planner 提供合法的扩展选项并管理 AND-OR 树 | [Preview 说明](multi_route/DianShi-RetroRoute-System-Preview/README.md) |
+| DianShi-RetroPlanSystem-v0 | 调度器向 planner 提供合法的扩展选项并管理 AND-OR 树 | [DianShi-RetroPlanSystem-v0 说明](multi_route/DianShi-RetroPlanSystem-v0/README.md) |
 
 ### 共同的规划流程
 
 1. Planner 选择要展开的分子或路线前沿。
-2. DianShi direct 模型通过 OpenAI 兼容的 `/v1/chat/completions` 接口提出单步断键。随附的 direct 配置不使用检索。
-3. AOT* 门控应用 rdchiral 反应模板（必要时做一轮 blurry 匹配），再按 SCScore 合成复杂度重排候选，并对库存之外的反应物施加 `unsolved_penalty`。只有通过的候选进入搜索。
+2. RetroStepLM-Direct 通过 OpenAI 兼容的 `/v1/chat/completions` 接口提出单步断键。随附的 direct 配置不使用检索。
+3. AOT* 门控应用 rdchiral 反应模板（必要时做一轮 blurry 匹配），再按 SCScore 合成复杂度重排候选，并对库存之外的反应物施加 `unsolved_penalty`。只有通过的候选进入搜索。论文中称这一步为 AOT*-style template-based reaction validation。
 4. 框架用规范化 SMILES 在标准化的 eMolecules SQLite 库存中检查反应物是否可购。一个反应的所有反应物都已解决时该反应即解决；找到完整分解时分子即解决。
 5. 目标被解决或达到框架的搜索上限时停止。调用预算、轮数上限、深度上限和停止规则见各框架说明。
 
-模板门控的约定和参数见 [VALIDATE.md](multi_route/DianShi-RetroRoute-System-Preview/docs/VALIDATE.md)。
+模板门控的约定和参数见 [VALIDATE.md](multi_route/DianShi-RetroPlanSystem-v0/docs/VALIDATE.md)。
 
 ### 所需模型与运行资源
 
 | 资源 | 准备方式 |
 |---|---|
-| DianShi direct 单步权重 | 在所选框架的 `.env` 中把 `SINGLE_STEP_MODEL_PATH` 设为 `DianShiGroup/DianShi-RetroStep-LM-Direct` 或本地副本。 |
+| RetroStepLM-Direct 单步权重 | 在所选框架的 `.env` 中把 `SINGLE_STEP_MODEL_PATH` 设为 `DianShiGroup/DianShi-RetroStepLM-Direct` 或本地副本。 |
 | Planner 权重 | 把 `PLANNER_MODEL_PATH` 设为 `Qwen/Qwen3.5-397B-A17B-FP8` 或本地副本。vLLM 可在首次使用时下载。 |
-| rdchiral 模板库 | 把 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` 设为 `DianShi-RetroRoute-Dataset/rxn_template/rdchiral_res_rxn_temp_count.jsonl`。 |
-| 可购砌块库存 | 把 `STARTING_MOLECULES` 设为标准化的 eMolecules SQLite 文件；运行 Retro-R1 时需显式传 `--starting_molecules`。 |
+| rdchiral 模板库 | 把 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` 设为 `DianShi-RetroPlanSystem-Assets/rxn_template/rdchiral_res_rxn_temp_count.jsonl`。 |
+| 可购砌块库存 | 把 `STARTING_MOLECULES` 设为标准化的 eMolecules SQLite 文件（23,081,629 个砌块）；运行 Retro-R1 时需显式传 `--starting_molecules`。库存来自 Retro* 的 eMolecules 砌块列表，用 RDKit 2025.9.5 标准化后转换为 SQLite。 |
 | 目标分子 | 每行一个目标 SMILES。评测目标路径见下文。 |
 | AOT* SCScore 权重 | 2048-bit gate checkpoint 已随每个框架的 gate 代码一起提供；1024-bit tool-server checkpoint 已 vendored 在 `RetroAgent/datasets/scscore/` 下，不需要额外下载或复制。 |
 
-模板库、库存数据库和目标文件已发布为 Hugging Face 数据集 [DianShiGroup/DianShi-RetroRoute-Dataset](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroRoute-Dataset)。把它下载到所选框架目录下的 `DianShi-RetroRoute-Dataset/`，按所选框架的说明放置资源，然后把其 `.env.example` 复制为 `.env`，配置模型路径、接口 URL 和 API key。
+模板库、库存数据库和目标文件已发布为 Hugging Face 数据集 [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets)。把它下载到所选框架目录下的 `DianShi-RetroPlanSystem-Assets/`，按所选框架的说明放置资源，然后把其 `.env.example` 复制为 `.env`，配置模型路径、接口 URL 和 API key。
 
 ### 目标集
 
@@ -192,28 +193,28 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 
 | 评测集 | 目标数 | 目标文件 |
 |---|---:|---|
-| USPTO-190 | 190 | `DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt` |
-| Pistachio-100 | 100 | `DianShi-RetroRoute-Dataset/test_dataset/pistachio_hard_tree.txt` |
-| PatMol-150 | 150 | `DianShi-RetroRoute-Dataset/test_dataset/patmol_150_targets.txt` |
+| USPTO-190 | 190 | `DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt` |
+| Pistachio Hard | 100 | `DianShi-RetroPlanSystem-Assets/test_dataset/pistachio_hard_tree.txt` |
+| PatMol-150 | 150 | `DianShi-RetroPlanSystem-Assets/test_dataset/patmol_150_targets.txt` |
 
-RetroAgent 用 `--targets` 选择目标；Retro-R1 的 runner 支持 `--targets`，`cli.py` 支持 `--data_file`。Preview 为每个目标集提供单独的评测 YAML。
+RetroAgent 用 `--targets` 选择目标；Retro-R1 的 runner 支持 `--targets`，`cli.py` 支持 `--data_file`。DianShi-RetroPlanSystem-v0 为每个目标集提供单独的评测 YAML。
 
-### 快速开始：Preview
+### 快速开始：DianShi-RetroPlanSystem-v0
 
 在 Python 3.11 及以上环境中，从仓库根目录运行：
 
 ~~~bash
-cd multi_route/DianShi-RetroRoute-System-Preview
+cd multi_route/DianShi-RetroPlanSystem-v0
 python3 -m pip install -r requirements.txt
 
 # 把运行资源下载到该框架目录。
-hf download DianShiGroup/DianShi-RetroRoute-Dataset --repo-type dataset --local-dir DianShi-RetroRoute-Dataset
+hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 
 cp .env.example .env
 # 编辑 .env：设置 SINGLE_STEP_MODEL_PATH、planner/单步模型的 URL、key 和资源路径。
 ~~~
 
-在 GPU 机器上、Preview 目录下，用两个终端分别部署两个模型。部署脚本使用 vLLM；组件说明要求 `vllm>=0.18`，已在 `0.26` 上验证。该部署环境与根目录的单步束搜索环境版本要求不同。按实际部署分配 GPU；默认配置为 planner TP=8、单步模型 TP=1。
+在 GPU 机器上、DianShi-RetroPlanSystem-v0 目录下，用两个终端分别部署两个模型。部署脚本使用 vLLM；组件说明要求 `vllm>=0.18`，已在 `0.26` 上验证。该部署环境与根目录的单步束搜索环境版本要求不同。按实际部署分配 GPU；默认配置为 planner TP=8、单步模型 TP=1。
 
 ~~~bash
 # 终端 1：planner 服务
@@ -225,15 +226,15 @@ bash scripts/serve_planner.sh
 bash scripts/serve_single_step.sh
 ~~~
 
-两个接口可用后，在 Preview 目录下运行评测。评测进程可以在 CPU 上运行，模型在 GPU 机器上运行：
+两个接口可用后，在 DianShi-RetroPlanSystem-v0 目录下运行评测。评测进程可以在 CPU 上运行，模型在 GPU 机器上运行：
 
 ~~~bash
 python3 cli.py --config configs/bench/qwen_direct_uspto190.yaml
-# 或评测 Pistachio 目标：
-python3 cli.py --config configs/bench/qwen_direct_pistachio100.yaml
+# 或评测 Pistachio Hard 目标：
+python3 cli.py --config configs/bench/qwen_direct_pistachio_hard.yaml
 ~~~
 
-随附的评测 YAML 开启了模板门控，并设置 `max_steps: 500`、`target_complete_paths: 1`、`concurrency: 2`。评测请使用这些 YAML；Preview 默认的 `config.yaml` 没有定义批量 `run` 段，且门控是关闭的。
+随附的评测 YAML 开启了模板门控，并设置 `max_steps: 500`、`target_complete_paths: 1`、`concurrency: 2`。评测请使用这些 YAML；该框架默认的 `config.yaml` 没有定义批量 `run` 段，且门控是关闭的。
 
 ### 运行两个 fork
 
@@ -245,7 +246,7 @@ RetroAgent 的 tool server 会从固定的相对路径加载库存，首次运�
 (
   cd multi_route/RetroAgent
   mkdir -p dataset
-  cp DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite dataset/
+  cp DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite dataset/
 )
 ~~~
 
@@ -254,7 +255,7 @@ RetroAgent 的 tool server 会从固定的相对路径加载库存，首次运�
   cd multi_route/RetroAgent
   PYTHON_BIN="$(command -v python3)" bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
-    --targets DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt
+    --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt
 )
 ~~~
 
@@ -263,8 +264,8 @@ RetroAgent 的 tool server 会从固定的相对路径加载库存，首次运�
   cd multi_route/Retro-R1-modified
   bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
-    --targets DianShi-RetroRoute-Dataset/test_dataset/uspto_190_targets_smiles.txt \
-    --starting_molecules DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite
+    --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt \
+    --starting_molecules DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite
 )
 ~~~
 
@@ -272,7 +273,7 @@ RetroAgent 的 runner 会启动配置的 tool server、运行评测，然后关�
 
 ### 多步结果与统计
 
-Preview 在 `results/bench/<dataset>/` 下为每个目标写一行，包含是否成功、终止原因、模型调用次数、耗时、token 用量和已求解的路线树。随附的评测 YAML 设置了 `resume: false`，不会覆盖已有输出。设置 `resume: true` 可续跑中断的评测；已有的行（包括失败目标）会被跳过。
+DianShi-RetroPlanSystem-v0 在 `results/bench/<dataset>/` 下为每个目标写一行，包含是否成功、终止原因、模型调用次数、耗时、token 用量和已求解的路线树。随附的评测 YAML 设置了 `resume: false`，不会覆盖已有输出。设置 `resume: true` 可续跑中断的评测；已有的行（包括失败目标）会被跳过。
 
 Retro-R1 在配置的输出目录下写 `result.jsonl`。RetroAgent 在日志目录下写每个目标的结果和 `summary.json`。完整的输出说明见各框架文档。
 
@@ -280,7 +281,7 @@ Retro-R1 在配置的输出目录下写 `result.jsonl`。RetroAgent 在日志目
 
 ~~~bash
 python3 multi_route/tools/solved_by_n.py \
-  multi_route/DianShi-RetroRoute-System-Preview/results/bench/uspto_190/qwen_direct_rdchiral_aot.jsonl
+  multi_route/DianShi-RetroPlanSystem-v0/results/bench/uspto_190/qwen_direct_rdchiral_aot.jsonl
 
 # 同一脚本也接受 Retro-R1 的 JSONL 或 RetroAgent 的 summary.json。
 python3 multi_route/tools/solved_by_n.py /path/to/result.jsonl
@@ -295,7 +296,7 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 
 | 路径 | 许可证 |
 |---|---|
-| 其余全部内容，含 `src/` 与 `multi_route/DianShi-RetroRoute-System-Preview/` | Apache-2.0（[`LICENSE`](LICENSE)） |
+| 其余全部内容，含 `src/` 与 `multi_route/DianShi-RetroPlanSystem-v0/` | Apache-2.0（[`LICENSE`](LICENSE)） |
 | `multi_route/RetroAgent/` | MIT（[`LICENSE`](multi_route/RetroAgent/LICENSE)、[`NOTICE`](multi_route/RetroAgent/NOTICE)） |
 | `multi_route/Retro-R1-modified/` | MIT（[`LICENSE`](multi_route/Retro-R1-modified/LICENSE)） |
 

@@ -2,7 +2,7 @@
 
 The shipped lanes use the AOT\*-style template gate before a single-step
 candidate enters the search. The gate is configured in
-`configs/bench/qwen_direct_*.yaml` (Preview) and `configs/dianshi_direct.yaml`
+`configs/bench/qwen_direct_*.yaml` (DianShi-RetroPlanSystem-v0) and `configs/dianshi_direct.yaml`
 (RetroAgent / Retro-R1-modified).
 
 ## Pipeline
@@ -40,7 +40,7 @@ are the settings of this implementation; AOT\* itself has different defaults.
 ## Library and stock
 
 - Template library: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` from the
-  runtime-assets bundle (412,027 entries), exposed as
+  DianShi-RetroPlanSystem-Assets bundle (412,027 entries), exposed as
   `DIANSHI_RDCHIRAL_TEMPLATE_JSONL`.
 - Purchasable stock: `stock/emolecules_standardized.sqlite`
   (23,081,629 entries), exposed as `STARTING_MOLECULES`.

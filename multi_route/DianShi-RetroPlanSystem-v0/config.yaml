@@ -4,7 +4,7 @@
 # the environment: $VAR / ${VAR:-default}. A repo-root .env (see
 # .env.example) is loaded automatically.
 
-starting_molecules: "${STARTING_MOLECULES:-./DianShi-RetroRoute-Dataset/stock/emolecules_standardized.sqlite}"
+starting_molecules: "${STARTING_MOLECULES:-./DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite}"
 
 # Search parameters defaults
 search:

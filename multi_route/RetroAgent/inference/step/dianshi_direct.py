@@ -1,4 +1,4 @@
-"""DianShi direct single-step adapter: an OpenAI-compatible HTTP step model
+"""DianShi-RetroStepLM-Direct single-step adapter: an OpenAI-compatible HTTP step model
 with the rdchiral/AOT* template gate, no retrieval."""
 
 from __future__ import annotations

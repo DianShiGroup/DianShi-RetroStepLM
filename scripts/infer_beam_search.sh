@@ -5,8 +5,8 @@ cd -- "$(dirname -- "$0")/.."
 export PYTHONPATH="$PWD/src${PYTHONPATH:+:$PYTHONPATH}"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
-MODEL_PATH="${MODEL_PATH:-models/DianShi-RetroStep-Direct}"
-CACHED_DATA_PATH="${CACHED_DATA_PATH:-model_tests/test_out/sl_cot/testset_sl_cot_new_cached}"
+MODEL_PATH="${MODEL_PATH:-models/DianShi-RetroStepLM-Direct}"
+CACHED_DATA_PATH="${CACHED_DATA_PATH:-model_tests/test_2025/intermediate_label/testset_intermediate_label_new_cached}"
 OUTPUT_DIR="${OUTPUT_DIR:-results}"
 OUTPUT_PATH="${OUTPUT_PATH:-}"
 NUM_GPUS="${NUM_GPUS:-1}"
@@ -64,8 +64,12 @@ fi
 
 if [ -z "$OUTPUT_PATH" ]; then
     MODEL_NAME="$(basename -- "$MODEL_PATH")"
-    DATASET_NAME="$(basename -- "$CACHED_DATA_PATH")"
-    OUTPUT_PATH="$OUTPUT_DIR/${MODEL_NAME}_${DATASET_NAME}_beam${BEAM_WIDTH}.jsonl"
+    # model_tests/<dataset>/intermediate_label/<split>_new_cached: keep both the
+    # dataset and the split, since every dataset shares the same split names.
+    SPLIT_NAME="$(basename -- "$CACHED_DATA_PATH")"
+    SPLIT_NAME="${SPLIT_NAME%_new_cached}"
+    DATASET_NAME="$(basename -- "$(dirname -- "$(dirname -- "$CACHED_DATA_PATH")")")"
+    OUTPUT_PATH="$OUTPUT_DIR/${MODEL_NAME}_${DATASET_NAME}_${SPLIT_NAME}_beam${BEAM_WIDTH}.jsonl"
 fi
 METRICS_PATH="${OUTPUT_PATH%.jsonl}_metrics.json"
 

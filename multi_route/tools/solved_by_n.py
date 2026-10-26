@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Solve rate at N=50..500 for bench_v1 / RetroAgent / Retro-R1 results.
+"""Solve rate at N=50..500 for DianShi-RetroPlanSystem-v0 / RetroAgent / Retro-R1 results.
 
 Usage:
     python solved_by_n.py RESULT_FILE
     python solved_by_n.py RESULT_FILE --framework bench|retroagent|r1
 
 Supported inputs:
-  - bench_v1 / Preview JSONL: one line per target, with
+  - DianShi-RetroPlanSystem-v0 JSONL (``--framework bench``): one line per target, with
     ``metrics.single_step_calls`` and ``success``.
   - Retro-R1 JSONL (result.jsonl / result_ordered.jsonl): one line per
     target, with ``onestep_calls`` and ``success``.
