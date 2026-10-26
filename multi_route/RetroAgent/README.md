@@ -352,8 +352,8 @@ described above; please cite this repository as well when you use them.
 ### Third-party code
 
 The template gate and its reranker are adapted from public sources rather than
-written from scratch. Both are covered by this repository's MIT license, with
-attribution below.
+written from scratch. Both are covered by this repository's Apache-2.0 license,
+with attribution below.
 
 **AOT\* — `inference/gate/scscore_numpy.py`, `inference/gate/aot_reactant_ranker.py`**
 
@@ -406,7 +406,10 @@ number. It is gone rather than left in as dead configuration.
 
 ### License
 
-See [`LICENSE`](LICENSE) for the RetroAgent code license (MIT). The
+This fork is distributed under Apache-2.0, as for the rest of the repository
+(see the root [`LICENSE`](../../LICENSE)). The upstream RetroAgent code is
+MIT-licensed; its copyright notice is kept in [`LICENSE`](LICENSE), as MIT
+requires. The
 single-step retrosynthesis model vendored under `external/desp/` is derived
 from its upstream project and remains subject to that project's original
 license and attribution (see [`NOTICE`](NOTICE)). Building blocks originate

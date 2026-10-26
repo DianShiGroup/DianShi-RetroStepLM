@@ -292,17 +292,17 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 
 ## 许可证
 
-本仓库以 [Apache-2.0](LICENSE) 发布，但 `multi_route/` 下的两个上游 fork 沿用各自的条款：
+整个仓库（包括 `multi_route/` 下的两个 fork）以 [Apache-2.0](LICENSE) 发布。
 
-| 路径 | 许可证 |
-|---|---|
-| 其余全部内容，含 `src/` 与 `multi_route/DianShi-RetroPlanSystem-v0/` | Apache-2.0（[`LICENSE`](LICENSE)） |
-| `multi_route/RetroAgent/` | MIT（[`LICENSE`](multi_route/RetroAgent/LICENSE)、[`NOTICE`](multi_route/RetroAgent/NOTICE)） |
-| `multi_route/Retro-R1-modified/` | MIT（[`LICENSE`](multi_route/Retro-R1-modified/LICENSE)） |
+`RetroAgent` 和 `Retro-R1-modified` 基于以 MIT 许可证发布的上游项目。按 MIT 的要求，
+上游的版权声明保留在 [`multi_route/RetroAgent/LICENSE`](multi_route/RetroAgent/LICENSE)
+（及 [`NOTICE`](multi_route/RetroAgent/NOTICE)）和
+[`multi_route/Retro-R1-modified/LICENSE`](multi_route/Retro-R1-modified/LICENSE) 中。
+`multi_route/Retro-R1-modified/packages/` 下内置的第三方包保留各自的许可证文件。
 
-内置的第三方依赖保留各自的许可证，见 `multi_route/Retro-R1-modified/packages/*/LICENSE`
-及各组件 README。数据集与模型权重单独发布，适用其 Hugging Face 页面上声明的条款；
-其中 eMolecules 原料数据另有自己的使用条款，再分发前请先确认。
+模型权重以 Apache-2.0 发布，与其微调所基于的 Qwen3-4B-Base 一致。运行资源数据集中含有
+第三方数据（eMolecules 原料库，以及 USPTO-190 和 Pistachio Hard 评测集），这些数据沿用
+原有条款，再分发前请先查看其 Hugging Face 页面。
 
 ## 致谢
 

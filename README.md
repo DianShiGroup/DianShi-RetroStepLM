@@ -292,20 +292,22 @@ The script detects the result format automatically and reports possible infrastr
 
 ## License
 
-This repository is licensed under [Apache-2.0](LICENSE), except for the two
-upstream forks under `multi_route/`, which keep their own terms:
+The whole repository, including both forks under `multi_route/`, is released
+under [Apache-2.0](LICENSE).
 
-| Path | License |
-|---|---|
-| Everything else, including `src/` and `multi_route/DianShi-RetroPlanSystem-v0/` | Apache-2.0 ([`LICENSE`](LICENSE)) |
-| `multi_route/RetroAgent/` | MIT ([`LICENSE`](multi_route/RetroAgent/LICENSE), [`NOTICE`](multi_route/RetroAgent/NOTICE)) |
-| `multi_route/Retro-R1-modified/` | MIT ([`LICENSE`](multi_route/Retro-R1-modified/LICENSE)) |
+`RetroAgent` and `Retro-R1-modified` build on upstream projects released under
+the MIT license. As MIT requires, the upstream copyright notices are kept in
+[`multi_route/RetroAgent/LICENSE`](multi_route/RetroAgent/LICENSE) (with
+[`NOTICE`](multi_route/RetroAgent/NOTICE)) and
+[`multi_route/Retro-R1-modified/LICENSE`](multi_route/Retro-R1-modified/LICENSE).
+Vendored third-party packages under `multi_route/Retro-R1-modified/packages/`
+keep their own license files.
 
-Vendored dependencies keep their own licenses — see
-`multi_route/Retro-R1-modified/packages/*/LICENSE` and the component READMEs.
-The datasets and model weights are distributed separately under the terms stated
-on their Hugging Face pages; the eMolecules building-block data in particular
-has its own terms, so check them before redistributing.
+The model weights are released under Apache-2.0, the license of the
+Qwen3-4B-Base model they are fine-tuned from. The runtime-assets dataset
+contains third-party data (the eMolecules raw-material stock and the USPTO-190
+and Pistachio Hard benchmarks) that remain under their original terms; see its
+Hugging Face page before redistributing.
 
 ## Attribution
 

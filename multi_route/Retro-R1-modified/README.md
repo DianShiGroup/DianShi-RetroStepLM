@@ -16,8 +16,8 @@ On top of that stack we added a **single-step model served over HTTP, gated by
 reaction templates**. That work is what the first half of this document is about.
 
 Upstream: [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1)
-(NeurIPS 2025, MIT). This fork is distributed under the same terms; see
-[License](#license).
+(NeurIPS 2025, MIT). This fork is distributed under Apache-2.0, with the
+upstream MIT notice kept; see [License](#license).
 
 ---
 
@@ -336,8 +336,8 @@ described above; please cite this repository as well when you use them.
 ### Third-party code
 
 The template gate and its reranker are adapted from public sources rather than
-written from scratch. Both are covered by this repository's MIT license, with
-attribution below.
+written from scratch. Both are covered by this repository's Apache-2.0 license,
+with attribution below.
 
 **AOT\* — `inference/gate/scscore_numpy.py`, `inference/gate/aot_reactant_ranker.py`**
 
@@ -388,8 +388,10 @@ passed the template gate. Across our full campaign it loaded 99 times, failed
 number. It is gone rather than left in as dead configuration.
 ### License
 
-MIT, inherited from [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1).
-Vendored dependencies keep their own licenses (`packages/rdchiral/LICENSE`).
+Apache-2.0, as for the rest of the repository (see the root [`LICENSE`](../../LICENSE)).
+The upstream [GenSI-THUAIR/Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1) is
+MIT-licensed; its copyright notice is kept in [`LICENSE`](LICENSE), as MIT
+requires. Vendored dependencies keep their own licenses (`packages/*/LICENSE`).
 The rdchiral template library is **not** part of this repository — obtain it
 from its own source and point `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` at it. The AOT*
 scScore checkpoint *is* included, under the terms described in
