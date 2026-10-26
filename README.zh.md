@@ -5,14 +5,14 @@
 基于 **DianShi-RetroStepLM-Direct** 的单步逆合成评测与多步合成路线规划。
 
 - **单步评测：** 从 DianShi-PatentRxnStep-Dataset 和 USPTO-50K 构建 intermediate-label 测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。提示词要求模型依次给出合成子（synthon）、离去基团（leaving group）和最终反应物，即模型训练所用的 intermediate-label 格式。
-- **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买砌块的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
+- **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买原料的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
 
 ## Hugging Face 资源
 
 | 资源 | 链接 | 内容 |
 |---|---|---|
 | 模型 | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | 单步逆合成模型（基于 Qwen3-4B-Base 微调，不使用检索） |
-| 数据集 | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | 多步规划运行资源：rdchiral 模板库、eMolecules 砌块库存，以及 USPTO-190 / Pistachio Hard / PatMol-150 目标集 |
+| 数据集 | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | 多步规划运行资源：rdchiral 模板库、eMolecules 原料库，以及 USPTO-190 / Pistachio Hard / PatMol-150 目标集 |
 
 ~~~bash
 # 单步：scripts/infer_beam_search.sh 的默认 --model-path
@@ -168,8 +168,8 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 
 1. Planner 选择要展开的分子或路线前沿。
 2. RetroStepLM-Direct 通过 OpenAI 兼容的 `/v1/chat/completions` 接口提出单步断键。随附的 direct 配置不使用检索。
-3. AOT* 门控应用 rdchiral 反应模板（必要时做一轮 blurry 匹配），再按 SCScore 合成复杂度重排候选，并对库存之外的反应物施加 `unsolved_penalty`。只有通过的候选进入搜索。论文中称这一步为 AOT*-style template-based reaction validation。
-4. 框架用规范化 SMILES 在标准化的 eMolecules SQLite 库存中检查反应物是否可购。一个反应的所有反应物都已解决时该反应即解决；找到完整分解时分子即解决。
+3. AOT* 门控应用 rdchiral 反应模板（必要时做一轮 blurry 匹配），再按 SCScore 合成复杂度重排候选，并对原料库之外的反应物施加 `unsolved_penalty`。只有通过的候选进入搜索。论文中称这一步为 AOT*-style template-based reaction validation。
+4. 框架用规范化 SMILES 在标准化的 eMolecules SQLite 原料库中检查反应物是否可购。一个反应的所有反应物都已解决时该反应即解决；找到完整分解时分子即解决。
 5. 目标被解决或达到框架的搜索上限时停止。调用预算、轮数上限、深度上限和停止规则见各框架说明。
 
 模板门控的约定和参数见 [VALIDATE.md](multi_route/DianShi-RetroPlanSystem-v0/docs/VALIDATE.md)。
@@ -181,11 +181,11 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 | RetroStepLM-Direct 单步权重 | 在所选框架的 `.env` 中把 `SINGLE_STEP_MODEL_PATH` 设为 `DianShiGroup/DianShi-RetroStepLM-Direct` 或本地副本。 |
 | Planner 权重 | 把 `PLANNER_MODEL_PATH` 设为 `Qwen/Qwen3.5-397B-A17B-FP8` 或本地副本。vLLM 可在首次使用时下载。 |
 | rdchiral 模板库 | 把 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` 设为 `DianShi-RetroPlanSystem-Assets/rxn_template/rdchiral_res_rxn_temp_count.jsonl`。 |
-| 可购砌块库存 | 把 `STARTING_MOLECULES` 设为标准化的 eMolecules SQLite 文件（23,081,629 个砌块）；运行 Retro-R1 时需显式传 `--starting_molecules`。库存来自 Retro* 的 eMolecules 砌块列表，用 RDKit 2025.9.5 标准化后转换为 SQLite。 |
+| 可购买原料库 | 把 `STARTING_MOLECULES` 设为标准化的 eMolecules SQLite 文件（23,081,629 个可购买原料）；运行 Retro-R1 时需显式传 `--starting_molecules`。原料库来自 Retro* 的 eMolecules 可购买原料列表，用 RDKit 2025.9.5 标准化后转换为 SQLite。 |
 | 目标分子 | 每行一个目标 SMILES。评测目标路径见下文。 |
 | AOT* SCScore 权重 | 2048-bit gate checkpoint 已随每个框架的 gate 代码一起提供；1024-bit tool-server checkpoint 已 vendored 在 `RetroAgent/datasets/scscore/` 下，不需要额外下载或复制。 |
 
-模板库、库存数据库和目标文件已发布为 Hugging Face 数据集 [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets)。把它下载到所选框架目录下的 `DianShi-RetroPlanSystem-Assets/`，按所选框架的说明放置资源，然后把其 `.env.example` 复制为 `.env`，配置模型路径、接口 URL 和 API key。
+模板库、原料库和目标文件已发布为 Hugging Face 数据集 [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets)。把它下载到所选框架目录下的 `DianShi-RetroPlanSystem-Assets/`，按所选框架的说明放置资源，然后把其 `.env.example` 复制为 `.env`，配置模型路径、接口 URL 和 API key。
 
 ### 目标集
 
@@ -240,7 +240,7 @@ python3 cli.py --config configs/bench/qwen_direct_pistachio_hard.yaml
 
 先按对应框架说明安装依赖、准备资源和 `.env`，并启动 planner 与单步模型服务。然后在仓库根目录运行以下任一命令：
 
-RetroAgent 的 tool server 会从固定的相对路径加载库存，首次运行前请先放好：
+RetroAgent 的 tool server 会从固定的相对路径加载原料库，首次运行前请先放好：
 
 ~~~bash
 (
@@ -302,8 +302,8 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 
 内置的第三方依赖保留各自的许可证，见 `multi_route/Retro-R1-modified/packages/*/LICENSE`
 及各组件 README。数据集与模型权重单独发布，适用其 Hugging Face 页面上声明的条款；
-其中 eMolecules 砌块数据另有自己的使用条款，再分发前请先确认。
+其中 eMolecules 原料数据另有自己的使用条款，再分发前请先确认。
 
 ## 致谢
 
-多步 fork 基于 [RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) 和 [Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1)。模板应用使用 [rdchiral](https://github.com/coleygroup/rdchiral)；重排改编自 [AOT*](https://github.com/ShawnKS/AOTstar)，使用 [SCScore](https://github.com/connorcoley/scscore) 打分器及其权重。砌块数据来自 eMolecules 以及各框架说明中记录的来源。引用和第三方条款见各组件的 README、许可证和声明文件。
+多步 fork 基于 [RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) 和 [Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1)。模板应用使用 [rdchiral](https://github.com/coleygroup/rdchiral)；重排改编自 [AOT*](https://github.com/ShawnKS/AOTstar)，使用 [SCScore](https://github.com/connorcoley/scscore) 打分器及其权重。原料数据来自 eMolecules 以及各框架说明中记录的来源。引用和第三方条款见各组件的 README、许可证和声明文件。
