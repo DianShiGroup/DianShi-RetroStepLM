@@ -7,6 +7,11 @@
 - 🧪 **单步评测：** 从 DianShi-PatentRxnStep-Dataset 和 USPTO-50K 构建 intermediate-label 测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。提示词要求模型依次给出合成子（synthon）、离去基团（leaving group）和最终反应物，即模型训练所用的 intermediate-label 格式。
 - 🧭 **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买原料的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
 
+## 📢 最新动态
+
+- **2026-10-28** — 🤗 [DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) 模型权重已开源，同时开源[单步推理与评测代码](#-单步评测)。
+- **2026-10-28** — [三个多步规划框架的推理代码](#-多步路线规划)已开源，运行资源发布为 🤗 [DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets)。
+
 ## 🤗 Hugging Face 资源
 
 | 资源 | 链接 | 内容 |

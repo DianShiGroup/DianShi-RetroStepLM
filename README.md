@@ -7,6 +7,11 @@ Single-step retrosynthesis evaluation and multi-step synthesis-route planning wi
 - 🧪 **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
 - 🧭 **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
 
+## 📢 News
+
+- **2026-10-28** — 🤗 The [DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) model weights are open, together with the [single-step inference and evaluation code](#-single-step-evaluation).
+- **2026-10-28** — The [inference code for all three multi-step planning frameworks](#-multi-step-route-planning) is open, with the runtime assets published as 🤗 [DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets).
+
 ## 🤗 Hugging Face resources
 
 | Resource | Link | Contents |
