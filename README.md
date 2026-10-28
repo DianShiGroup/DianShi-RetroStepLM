@@ -4,12 +4,12 @@ English | [中文](README.zh.md)
 
 Single-step retrosynthesis evaluation and multi-step synthesis-route planning with **DianShi-RetroStepLM-Direct**.
 
-- 🔬 **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
-- ⚗️ **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
+- **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
+- **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
 
 ## 📢 News
 
-- **2026-10-28** — The [DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) model weights are open, together with the [single-step inference and evaluation code](#-single-step-evaluation).
+- **2026-10-28** — The [DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) model weights are open, together with the [single-step inference and evaluation code](#single-step-evaluation).
 - **2026-10-28** — The [inference code for all three multi-step planning frameworks](#multi-step-route-planning) is open, with the runtime assets published as [DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets).
 
 ## 🤗 Hugging Face resources
@@ -66,7 +66,7 @@ DianShi-RetroStep/
   requirements.txt
 ~~~
 
-## 🔬 Single-step evaluation
+## Single-step evaluation
 
 Commands in this section run from the repository root. The `scripts/` entry points switch to the repository root and add `src` to `PYTHONPATH` automatically.
 
@@ -155,9 +155,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   --output-json results/test_2025_intermediate_label_beam10_metrics.json
 ~~~
 
-<a id="multi-step-route-planning"></a>
-
-## ⚗️ Multi-step route planning
+## Multi-step route planning
 
 Each framework has its own dependencies, configuration, and `.env`. The [multi-step overview](multi_route/README.md) links to each framework's full guide.
 
