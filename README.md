@@ -5,19 +5,19 @@ English | [中文](README.zh.md)
 Single-step retrosynthesis evaluation and multi-step synthesis-route planning with **DianShi-RetroStepLM-Direct**.
 
 - 🔬 **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
-- 🧬 **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
+- ⚗️ **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
 
 ## 📢 News
 
-- **2026-10-28** — 🤗 The [DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) model weights are open, together with the [single-step inference and evaluation code](#-single-step-evaluation).
-- **2026-10-28** — The [inference code for all three multi-step planning frameworks](#-multi-step-route-planning) is open, with the runtime assets published as 🤗 [DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets).
+- **2026-10-28** — The [DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) model weights are open, together with the [single-step inference and evaluation code](#-single-step-evaluation).
+- **2026-10-28** — The [inference code for all three multi-step planning frameworks](#multi-step-route-planning) is open, with the runtime assets published as [DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets).
 
 ## 🤗 Hugging Face resources
 
 | Resource | Link | Contents |
 |---|---|---|
-| Model | 🤗 [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | Single-step retrosynthesis model (Qwen3-4B-Base fine-tuned, no retrieval) |
-| Dataset | 🤗 [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Multi-step runtime assets: rdchiral template library, eMolecules building-block stock, and the USPTO-190 / Pistachio Hard / PatMol-150 target sets |
+| Model | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | Single-step retrosynthesis model (Qwen3-4B-Base fine-tuned, no retrieval) |
+| Dataset | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Multi-step runtime assets: rdchiral template library, eMolecules building-block stock, and the USPTO-190 / Pistachio Hard / PatMol-150 target sets |
 
 ~~~bash
 # Single-step: the default --model-path of scripts/infer_beam_search.sh
@@ -36,7 +36,7 @@ The single-step scripts and the multi-step frameworks also accept the model ID `
 |---|---|---|
 | Build single-step evaluation datasets | `scripts/build_model_tests.sh` | [Building the datasets](#building-the-datasets) |
 | Run single-step inference and Top-k evaluation | `scripts/infer_beam_search.sh` | [Beam-search inference and evaluation](#beam-search-inference-and-evaluation) |
-| Run multi-step route planning | A framework under `multi_route/` | [Multi-step route planning](#-multi-step-route-planning) |
+| Run multi-step route planning | A framework under `multi_route/` | [Multi-step route planning](#multi-step-route-planning) |
 | Compare solve rates across search budgets | `multi_route/tools/solved_by_n.py` | [Multi-step results and statistics](#multi-step-results-and-statistics) |
 
 ## 📂 Repository layout
@@ -155,7 +155,9 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   --output-json results/test_2025_intermediate_label_beam10_metrics.json
 ~~~
 
-## 🧬 Multi-step route planning
+<a id="multi-step-route-planning"></a>
+
+## ⚗️ Multi-step route planning
 
 Each framework has its own dependencies, configuration, and `.env`. The [multi-step overview](multi_route/README.md) links to each framework's full guide.
 
