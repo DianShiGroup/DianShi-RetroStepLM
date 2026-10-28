@@ -4,15 +4,15 @@
 
 基于 **DianShi-RetroStepLM-Direct** 的单步逆合成评测与多步合成路线规划。
 
-- **单步评测：** 从 DianShi-PatentRxnStep-Dataset 和 USPTO-50K 构建 intermediate-label 测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。提示词要求模型依次给出合成子（synthon）、离去基团（leaving group）和最终反应物，即模型训练所用的 intermediate-label 格式。
-- **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买原料的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
+- 🧪 **单步评测：** 从 DianShi-PatentRxnStep-Dataset 和 USPTO-50K 构建 intermediate-label 测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。提示词要求模型依次给出合成子（synthon）、离去基团（leaving group）和最终反应物，即模型训练所用的 intermediate-label 格式。
+- 🧭 **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买原料的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
 
-## Hugging Face 资源
+## 🤗 Hugging Face 资源
 
 | 资源 | 链接 | 内容 |
 |---|---|---|
-| 模型 | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | 单步逆合成模型（基于 Qwen3-4B-Base 微调，不使用检索） |
-| 数据集 | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | 多步规划运行资源：rdchiral 模板库、eMolecules 原料库，以及 USPTO-190 / Pistachio Hard / PatMol-150 目标集 |
+| 模型 | 🤗 [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | 单步逆合成模型（基于 Qwen3-4B-Base 微调，不使用检索） |
+| 数据集 | 🤗 [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | 多步规划运行资源：rdchiral 模板库、eMolecules 原料库，以及 USPTO-190 / Pistachio Hard / PatMol-150 目标集 |
 
 ~~~bash
 # 单步：scripts/infer_beam_search.sh 的默认 --model-path
@@ -25,16 +25,16 @@ hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --lo
 
 单步脚本和多步框架也可以直接使用模型 ID `DianShiGroup/DianShi-RetroStepLM-Direct`，vLLM 会在首次使用时自动下载。
 
-## 快速入口
+## 🚀 快速入口
 
 | 任务 | 入口 | 说明 |
 |---|---|---|
 | 构建单步评测数据集 | `scripts/build_model_tests.sh` | [构建数据集](#构建数据集) |
 | 单步推理与 Top-k 评测 | `scripts/infer_beam_search.sh` | [束搜索推理与评测](#束搜索推理与评测) |
-| 多步路线规划 | `multi_route/` 下的某个框架 | [多步路线规划](#多步路线规划) |
+| 多步路线规划 | `multi_route/` 下的某个框架 | [多步路线规划](#-多步路线规划) |
 | 比较不同搜索预算下的求解率 | `multi_route/tools/solved_by_n.py` | [多步结果与统计](#多步结果与统计) |
 
-## 仓库结构
+## 📂 仓库结构
 
 ~~~text
 DianShi-RetroStep/
@@ -61,7 +61,7 @@ DianShi-RetroStep/
   requirements.txt
 ~~~
 
-## 单步评测
+## 🧪 单步评测
 
 本节命令均在仓库根目录运行。`scripts/` 下的入口脚本会自动切换到仓库根目录，并把 `src` 加入 `PYTHONPATH`。
 
@@ -150,7 +150,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   --output-json results/test_2025_intermediate_label_beam10_metrics.json
 ~~~
 
-## 多步路线规划
+## 🧭 多步路线规划
 
 每个框架都有自己的依赖、配置和 `.env`。[多步框架总览](multi_route/README.md)链接到各框架的完整说明。
 
@@ -290,7 +290,7 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 
 脚本会自动识别结果格式，并报告可能的基础设施故障。求解率基于所提供的记录计算；比较不同运行前，请确认目标集完整并处理已报告的故障。对于 RetroAgent 的 `summary.json`，脚本使用第一个实验。
 
-## 许可证
+## 📜 许可证
 
 整个仓库（包括 `multi_route/` 下的两个 fork）以 [Apache-2.0](LICENSE) 发布。
 
@@ -304,6 +304,6 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 第三方数据（eMolecules 原料库，以及 USPTO-190 和 Pistachio Hard 评测集），这些数据沿用
 原有条款，再分发前请先查看其 Hugging Face 页面。
 
-## 致谢
+## 📚 致谢
 
 多步 fork 基于 [RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) 和 [Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1)。模板应用使用 [rdchiral](https://github.com/coleygroup/rdchiral)；重排改编自 [AOT*](https://github.com/ShawnKS/AOTstar)，使用 [SCScore](https://github.com/connorcoley/scscore) 打分器及其权重。原料数据来自 eMolecules 以及各框架说明中记录的来源。引用和第三方条款见各组件的 README、许可证和声明文件。

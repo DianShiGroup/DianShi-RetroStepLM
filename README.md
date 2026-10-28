@@ -4,15 +4,15 @@ English | [中文](README.zh.md)
 
 Single-step retrosynthesis evaluation and multi-step synthesis-route planning with **DianShi-RetroStepLM-Direct**.
 
-- **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
-- **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
+- 🧪 **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
+- 🧭 **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
 
-## Hugging Face resources
+## 🤗 Hugging Face resources
 
 | Resource | Link | Contents |
 |---|---|---|
-| Model | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | Single-step retrosynthesis model (Qwen3-4B-Base fine-tuned, no retrieval) |
-| Dataset | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Multi-step runtime assets: rdchiral template library, eMolecules building-block stock, and the USPTO-190 / Pistachio Hard / PatMol-150 target sets |
+| Model | 🤗 [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | Single-step retrosynthesis model (Qwen3-4B-Base fine-tuned, no retrieval) |
+| Dataset | 🤗 [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Multi-step runtime assets: rdchiral template library, eMolecules building-block stock, and the USPTO-190 / Pistachio Hard / PatMol-150 target sets |
 
 ~~~bash
 # Single-step: the default --model-path of scripts/infer_beam_search.sh
@@ -25,16 +25,16 @@ hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --lo
 
 The single-step scripts and the multi-step frameworks also accept the model ID `DianShiGroup/DianShi-RetroStepLM-Direct` directly; vLLM downloads it on first use.
 
-## Getting started
+## 🚀 Getting started
 
 | Task | Entry point | Guide |
 |---|---|---|
 | Build single-step evaluation datasets | `scripts/build_model_tests.sh` | [Building the datasets](#building-the-datasets) |
 | Run single-step inference and Top-k evaluation | `scripts/infer_beam_search.sh` | [Beam-search inference and evaluation](#beam-search-inference-and-evaluation) |
-| Run multi-step route planning | A framework under `multi_route/` | [Multi-step route planning](#multi-step-route-planning) |
+| Run multi-step route planning | A framework under `multi_route/` | [Multi-step route planning](#-multi-step-route-planning) |
 | Compare solve rates across search budgets | `multi_route/tools/solved_by_n.py` | [Multi-step results and statistics](#multi-step-results-and-statistics) |
 
-## Repository layout
+## 📂 Repository layout
 
 ~~~text
 DianShi-RetroStep/
@@ -61,7 +61,7 @@ DianShi-RetroStep/
   requirements.txt
 ~~~
 
-## Single-step evaluation
+## 🧪 Single-step evaluation
 
 Commands in this section run from the repository root. The `scripts/` entry points switch to the repository root and add `src` to `PYTHONPATH` automatically.
 
@@ -150,7 +150,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
   --output-json results/test_2025_intermediate_label_beam10_metrics.json
 ~~~
 
-## Multi-step route planning
+## 🧭 Multi-step route planning
 
 Each framework has its own dependencies, configuration, and `.env`. The [multi-step overview](multi_route/README.md) links to each framework's full guide.
 
@@ -290,7 +290,7 @@ python3 multi_route/tools/solved_by_n.py /path/to/summary.json
 
 The script detects the result format automatically and reports possible infrastructure failures. It computes rates over the supplied records; confirm target-set completeness and resolve reported failures before comparing runs. For RetroAgent `summary.json`, it uses the first experiment.
 
-## License
+## 📜 License
 
 The whole repository, including both forks under `multi_route/`, is released
 under [Apache-2.0](LICENSE).
@@ -309,6 +309,6 @@ contains third-party data (the eMolecules raw-material stock and the USPTO-190
 and Pistachio Hard benchmarks) that remain under their original terms; see its
 Hugging Face page before redistributing.
 
-## Attribution
+## 📚 Attribution
 
 The multi-step forks build on [RetroAgent](https://huggingface.co/SXKDZ/RetroAgent) and [Retro-R1](https://github.com/GenSI-THUAIR/Retro-R1). Template application uses [rdchiral](https://github.com/coleygroup/rdchiral); reranking adapts [AOT*](https://github.com/ShawnKS/AOTstar) with the [SCScore](https://github.com/connorcoley/scscore) scorer and weights. Building-block data derives from eMolecules and the sources documented in each framework guide. See the component READMEs, licenses, and notices for citations and third-party terms.
