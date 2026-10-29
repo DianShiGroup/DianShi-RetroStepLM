@@ -1,11 +1,11 @@
-# DianShi-RetroStep
+# DianShi-RetroStepLM
 
 English | [中文](README.zh.md)
 
 Single-step retrosynthesis evaluation and multi-step synthesis-route planning with **DianShi-RetroStepLM-Direct**.
 
 - **Single-step evaluation:** build intermediate-label test datasets from DianShi-PatentRxnStep-Dataset and USPTO-50K, run vLLM beam search, and report exact-match Top-k accuracy. The prompt asks for synthons, then leaving groups, then the final reactants, which is the intermediate-label format the model was trained on.
-- **Multi-step planning:** three frameworks under `multi_route/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
+- **Multi-step planning:** three frameworks under `multi_step/` use an LLM planner to search for routes to purchasable building blocks, combining RetroStepLM-Direct with rdchiral template application and AOT* SCScore reranking.
 
 ## 📢 News
 
@@ -24,7 +24,7 @@ Single-step retrosynthesis evaluation and multi-step synthesis-route planning wi
 hf download DianShiGroup/DianShi-RetroStepLM-Direct --local-dir models/DianShi-RetroStepLM-Direct
 
 # Multi-step: run inside the selected framework directory
-cd multi_route/DianShi-RetroPlanSystem-v0
+cd multi_step/DianShi-RetroPlanSystem-v0
 hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 ~~~
 
@@ -36,20 +36,20 @@ The single-step scripts and the multi-step frameworks also accept the model ID `
 |---|---|---|
 | Build single-step evaluation datasets | `scripts/build_model_tests.sh` | [Building the datasets](#building-the-datasets) |
 | Run single-step inference and Top-k evaluation | `scripts/infer_beam_search.sh` | [Beam-search inference and evaluation](#beam-search-inference-and-evaluation) |
-| Run multi-step route planning | A framework under `multi_route/` | [Multi-step route planning](#multi-step-route-planning) |
-| Compare solve rates across search budgets | `multi_route/tools/solved_by_n.py` | [Multi-step results and statistics](#multi-step-results-and-statistics) |
+| Run multi-step route planning | A framework under `multi_step/` | [Multi-step route planning](#multi-step-route-planning) |
+| Compare solve rates across search budgets | `multi_step/tools/solved_by_n.py` | [Multi-step results and statistics](#multi-step-results-and-statistics) |
 
 ## 📂 Repository layout
 
 ~~~text
-DianShi-RetroStep/
+DianShi-RetroStepLM/
   datasets/
     DianShi-PatentRxnStep-Dataset/
                                   Test-2001-2024, Test-2025, Val-2001-2024, Val-2025
     DianShi-PatentRxnStep-LocalTemplates/
                                   Train-Full local templates and seed 42/43/44 template partitions
     USPTO-50K/                    Raw train, validation, and test splits
-  multi_route/
+  multi_step/
     RetroAgent/                   Tool-calling planner with AND-OR graph memory
     Retro-R1-modified/            CALL / SELECT planning environment
     DianShi-RetroPlanSystem-v0/   AND-OR tree dispatcher and benchmark CLI
@@ -58,7 +58,7 @@ DianShi-RetroStep/
   scripts/
     build_model_tests.sh          Build intermediate-label evaluation datasets
     infer_beam_search.sh          Beam-search inference + evaluation
-  src/dianshi_retrostep/
+  src/dianshi_retrosteplm/
     data/                         Dataset builder, atom-wise SMILES conversion
     inference/                    Multi-GPU vLLM beam search
     evaluation/                   Exact-match Top-k evaluation
@@ -142,18 +142,18 @@ Each option can also be set by its uppercase environment variable, for example `
 
 The runner chains two modules, which can also be run separately (after `pip install -e .` or with `PYTHONPATH=src`):
 
-- `dianshi_retrostep.inference.vllm_beamsearch_infer` keeps only the system and user messages (so the stored answer never leaks into the prompt), shards each batch across one-GPU Ray workers, runs ordered beam search, and writes one JSON line per sample with the ranked beams and cumulative log probabilities.
-- `dianshi_retrostep.evaluation.eval_retro_beam_topk` extracts the answer from each beam, canonicalizes reference and predicted reactants with RDKit, ignores reactant order, and reports exact-match Top-k accuracy. It accepts `<answer>` tags, plain or atom-wise SMILES, markdown-wrapped answers, and text after `</think>`.
+- `dianshi_retrosteplm.inference.vllm_beamsearch_infer` keeps only the system and user messages (so the stored answer never leaks into the prompt), shards each batch across one-GPU Ray workers, runs ordered beam search, and writes one JSON line per sample with the ranked beams and cumulative log probabilities.
+- `dianshi_retrosteplm.evaluation.eval_retro_beam_topk` extracts the answer from each beam, canonicalizes reference and predicted reactants with RDKit, ignores reactant order, and reports exact-match Top-k accuracy. It accepts `<answer>` tags, plain or atom-wise SMILES, markdown-wrapped answers, and text after `</think>`.
 
 ~~~bash
-python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
+python3 -m dianshi_retrosteplm.inference.vllm_beamsearch_infer \
   --model-path DianShiGroup/DianShi-RetroStepLM-Direct \
   --cached-data-path model_tests/test_2025/intermediate_label/testset_intermediate_label_new_cached \
   --output-path results/test_2025_intermediate_label_beam10.jsonl \
   --num-gpus 1 \
   --beam-width 10
 
-python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
+python3 -m dianshi_retrosteplm.evaluation.eval_retro_beam_topk \
   results/test_2025_intermediate_label_beam10.jsonl \
   --ks 1 3 5 10 \
   --output-json results/test_2025_intermediate_label_beam10_metrics.json
@@ -161,7 +161,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 
 ## Multi-step route planning
 
-Each framework has its own dependencies, configuration, and `.env`. The [multi-step overview](multi_route/README.md) links to each framework's full guide.
+Each framework has its own dependencies, configuration, and `.env`. The [multi-step overview](multi_step/README.md) links to each framework's full guide.
 
 ### Frameworks
 
@@ -169,9 +169,9 @@ The three frameworks are independently runnable. Their shipped direct configurat
 
 | Framework | Search interface | Setup and configuration |
 |---|---|---|
-| RetroAgent | An agent calls tools backed by an HTTP server and AND-OR `GraphMemory` | [RetroAgent guide](multi_route/RetroAgent/README.md) |
-| Retro-R1-modified | An in-process agent uses `CALL` to request candidates and `SELECT` to apply one | [Retro-R1 guide](multi_route/Retro-R1-modified/README.md) |
-| DianShi-RetroPlanSystem-v0 | A dispatcher presents legal expansion options to the planner and manages an AND-OR tree | [DianShi-RetroPlanSystem-v0 guide](multi_route/DianShi-RetroPlanSystem-v0/README.md) |
+| RetroAgent | An agent calls tools backed by an HTTP server and AND-OR `GraphMemory` | [RetroAgent guide](multi_step/RetroAgent/README.md) |
+| Retro-R1-modified | An in-process agent uses `CALL` to request candidates and `SELECT` to apply one | [Retro-R1 guide](multi_step/Retro-R1-modified/README.md) |
+| DianShi-RetroPlanSystem-v0 | A dispatcher presents legal expansion options to the planner and manages an AND-OR tree | [DianShi-RetroPlanSystem-v0 guide](multi_step/DianShi-RetroPlanSystem-v0/README.md) |
 
 ### Shared planning pipeline
 
@@ -181,7 +181,7 @@ The three frameworks are independently runnable. Their shipped direct configurat
 4. The framework checks reactant availability against a standardized eMolecules SQLite stock using canonical SMILES. A reaction is solved when all its reactants are solved; a molecule is solved when a complete decomposition is found.
 5. Search stops when the target is solved or a framework-specific search limit is reached. See each framework's guide for its call budget, turn limit, depth limit, and stopping rules.
 
-For the template-gate contract and parameters, see [VALIDATE.md](multi_route/DianShi-RetroPlanSystem-v0/docs/VALIDATE.md).
+For the template-gate contract and parameters, see [VALIDATE.md](multi_step/DianShi-RetroPlanSystem-v0/docs/VALIDATE.md).
 
 ### Required models and runtime assets
 
@@ -213,7 +213,7 @@ RetroAgent selects targets with `--targets`; Retro-R1 supports `--targets` in it
 Run the following from the repository root in a Python 3.11 or later environment:
 
 ~~~bash
-cd multi_route/DianShi-RetroPlanSystem-v0
+cd multi_step/DianShi-RetroPlanSystem-v0
 python3 -m pip install -r requirements.txt
 
 # Download the runtime assets into this framework directory.
@@ -253,7 +253,7 @@ RetroAgent's tool server loads the stock from a fixed relative path, so place it
 
 ~~~bash
 (
-  cd multi_route/RetroAgent
+  cd multi_step/RetroAgent
   mkdir -p dataset
   cp DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite dataset/
 )
@@ -261,7 +261,7 @@ RetroAgent's tool server loads the stock from a fixed relative path, so place it
 
 ~~~bash
 (
-  cd multi_route/RetroAgent
+  cd multi_step/RetroAgent
   PYTHON_BIN="$(command -v python3)" bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
     --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt
@@ -270,7 +270,7 @@ RetroAgent's tool server loads the stock from a fixed relative path, so place it
 
 ~~~bash
 (
-  cd multi_route/Retro-R1-modified
+  cd multi_step/Retro-R1-modified
   bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
     --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt \
@@ -289,27 +289,27 @@ Retro-R1 writes `result.jsonl` under its configured output directory. RetroAgent
 From the repository root, compute solve rates at N = 50, 100, 200, 300, 400, and 500 using the shared statistics script:
 
 ~~~bash
-python3 multi_route/tools/solved_by_n.py \
-  multi_route/DianShi-RetroPlanSystem-v0/results/bench/uspto_190/qwen_direct_rdchiral_aot.jsonl
+python3 multi_step/tools/solved_by_n.py \
+  multi_step/DianShi-RetroPlanSystem-v0/results/bench/uspto_190/qwen_direct_rdchiral_aot.jsonl
 
 # The same script accepts Retro-R1 JSONL or RetroAgent summary.json.
-python3 multi_route/tools/solved_by_n.py /path/to/result.jsonl
-python3 multi_route/tools/solved_by_n.py /path/to/summary.json
+python3 multi_step/tools/solved_by_n.py /path/to/result.jsonl
+python3 multi_step/tools/solved_by_n.py /path/to/summary.json
 ~~~
 
 The script detects the result format automatically and reports possible infrastructure failures. It computes rates over the supplied records; confirm target-set completeness and resolve reported failures before comparing runs. For RetroAgent `summary.json`, it uses the first experiment.
 
 ## 📜 License
 
-The whole repository, including both forks under `multi_route/`, is released
+The whole repository, including both forks under `multi_step/`, is released
 under [Apache-2.0](LICENSE).
 
 `RetroAgent` and `Retro-R1-modified` build on upstream projects released under
 the MIT license. As MIT requires, the upstream copyright notices are kept in
-[`multi_route/RetroAgent/LICENSE`](multi_route/RetroAgent/LICENSE) (with
-[`NOTICE`](multi_route/RetroAgent/NOTICE)) and
-[`multi_route/Retro-R1-modified/LICENSE`](multi_route/Retro-R1-modified/LICENSE).
-Vendored third-party packages under `multi_route/Retro-R1-modified/packages/`
+[`multi_step/RetroAgent/LICENSE`](multi_step/RetroAgent/LICENSE) (with
+[`NOTICE`](multi_step/RetroAgent/NOTICE)) and
+[`multi_step/Retro-R1-modified/LICENSE`](multi_step/Retro-R1-modified/LICENSE).
+Vendored third-party packages under `multi_step/Retro-R1-modified/packages/`
 keep their own license files.
 
 The model weights are released under Apache-2.0, the license of the

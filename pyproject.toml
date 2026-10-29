@@ -3,9 +3,9 @@ requires = ["setuptools>=64"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dianshi-retrostep"
+name = "dianshi-retrosteplm"
 version = "0.1.0"
-description = "DianShi-RetroStep evaluation dataset building, vLLM beam-search inference, and Top-k evaluation."
+description = "DianShi-RetroStepLM evaluation dataset building, vLLM beam-search inference, and Top-k evaluation."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -19,12 +19,12 @@ dependencies = [
 ]
 
 [project.scripts]
-dianshi-build-tests = "dianshi_retrostep.data.build_model_tests:main"
-dianshi-infer = "dianshi_retrostep.inference.vllm_beamsearch_infer:main"
-dianshi-eval = "dianshi_retrostep.evaluation.eval_retro_beam_topk:main"
+dianshi-build-tests = "dianshi_retrosteplm.data.build_model_tests:main"
+dianshi-infer = "dianshi_retrosteplm.inference.vllm_beamsearch_infer:main"
+dianshi-eval = "dianshi_retrosteplm.evaluation.eval_retro_beam_topk:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-dianshi_retrostep = ["prompts/*.txt"]
+dianshi_retrosteplm = ["prompts/*.txt"]

@@ -17,7 +17,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 
-from dianshi_retrostep.data.smiles_atomwise import transform_messages
+from dianshi_retrosteplm.data.smiles_atomwise import transform_messages
 
 
 PACKAGE_DIR = Path(__file__).resolve().parents[1]

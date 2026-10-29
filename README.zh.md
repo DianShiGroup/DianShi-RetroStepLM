@@ -1,11 +1,11 @@
-# DianShi-RetroStep
+# DianShi-RetroStepLM
 
 [English](README.md) | 中文
 
 基于 **DianShi-RetroStepLM-Direct** 的单步逆合成评测与多步合成路线规划。
 
 - **单步评测：** 从 DianShi-PatentRxnStep-Dataset 和 USPTO-50K 构建 intermediate-label 测试集，运行 vLLM 束搜索，报告 Top-k 精确匹配准确率。提示词要求模型依次给出合成子（synthon）、离去基团（leaving group）和最终反应物，即模型训练所用的 intermediate-label 格式。
-- **多步规划：** `multi_route/` 下的三个框架用 LLM planner 搜索到可购买原料的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
+- **多步规划：** `multi_step/` 下的三个框架用 LLM planner 搜索到可购买原料的路线，结合 RetroStepLM-Direct、rdchiral 模板应用和 AOT* SCScore 重排。
 
 ## 📢 最新动态
 
@@ -24,7 +24,7 @@
 hf download DianShiGroup/DianShi-RetroStepLM-Direct --local-dir models/DianShi-RetroStepLM-Direct
 
 # 多步：在所选框架目录下运行
-cd multi_route/DianShi-RetroPlanSystem-v0
+cd multi_step/DianShi-RetroPlanSystem-v0
 hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 ~~~
 
@@ -36,20 +36,20 @@ hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --lo
 |---|---|---|
 | 构建单步评测数据集 | `scripts/build_model_tests.sh` | [构建数据集](#构建数据集) |
 | 单步推理与 Top-k 评测 | `scripts/infer_beam_search.sh` | [束搜索推理与评测](#束搜索推理与评测) |
-| 多步路线规划 | `multi_route/` 下的某个框架 | [多步路线规划](#多步路线规划) |
-| 比较不同搜索预算下的求解率 | `multi_route/tools/solved_by_n.py` | [多步结果与统计](#多步结果与统计) |
+| 多步路线规划 | `multi_step/` 下的某个框架 | [多步路线规划](#多步路线规划) |
+| 比较不同搜索预算下的求解率 | `multi_step/tools/solved_by_n.py` | [多步结果与统计](#多步结果与统计) |
 
 ## 📂 仓库结构
 
 ~~~text
-DianShi-RetroStep/
+DianShi-RetroStepLM/
   datasets/
     DianShi-PatentRxnStep-Dataset/
                                   Test-2001-2024、Test-2025、Val-2001-2024、Val-2025
     DianShi-PatentRxnStep-LocalTemplates/
                                   Train-Full 的 local 模板，及 seed 42/43/44 的模板划分
     USPTO-50K/                    原始 train、validation、test 划分
-  multi_route/
+  multi_step/
     RetroAgent/                   带 AND-OR 图记忆的工具调用式 planner
     Retro-R1-modified/            CALL / SELECT 规划环境
     DianShi-RetroPlanSystem-v0/   AND-OR 树调度器与评测 CLI
@@ -58,7 +58,7 @@ DianShi-RetroStep/
   scripts/
     build_model_tests.sh          构建 intermediate-label 评测数据集
     infer_beam_search.sh          束搜索推理 + 评测
-  src/dianshi_retrostep/
+  src/dianshi_retrosteplm/
     data/                         数据集构建、atom-wise SMILES 转换
     inference/                    多 GPU vLLM 束搜索
     evaluation/                   Top-k 精确匹配评测
@@ -142,18 +142,18 @@ scripts/infer_beam_search.sh \
 
 该脚本串联两个模块，也可以分别运行（先 `pip install -e .`，或在命令前加 `PYTHONPATH=src`）：
 
-- `dianshi_retrostep.inference.vllm_beamsearch_infer`：只保留 system 和 user 消息（避免数据集中的标准答案泄漏进输入），把每个批次分配给单 GPU 的 Ray worker，按序执行束搜索，每个样本写一行 JSON，包含排序后的候选及累积对数概率。
-- `dianshi_retrostep.evaluation.eval_retro_beam_topk`：从每条候选中提取答案，用 RDKit 规范化标准答案和预测反应物，忽略反应物顺序，报告 Top-k 精确匹配准确率。支持 `<answer>` 标签、普通或 atom-wise SMILES、Markdown 包裹的答案，以及 `</think>` 之后的文本。
+- `dianshi_retrosteplm.inference.vllm_beamsearch_infer`：只保留 system 和 user 消息（避免数据集中的标准答案泄漏进输入），把每个批次分配给单 GPU 的 Ray worker，按序执行束搜索，每个样本写一行 JSON，包含排序后的候选及累积对数概率。
+- `dianshi_retrosteplm.evaluation.eval_retro_beam_topk`：从每条候选中提取答案，用 RDKit 规范化标准答案和预测反应物，忽略反应物顺序，报告 Top-k 精确匹配准确率。支持 `<answer>` 标签、普通或 atom-wise SMILES、Markdown 包裹的答案，以及 `</think>` 之后的文本。
 
 ~~~bash
-python3 -m dianshi_retrostep.inference.vllm_beamsearch_infer \
+python3 -m dianshi_retrosteplm.inference.vllm_beamsearch_infer \
   --model-path DianShiGroup/DianShi-RetroStepLM-Direct \
   --cached-data-path model_tests/test_2025/intermediate_label/testset_intermediate_label_new_cached \
   --output-path results/test_2025_intermediate_label_beam10.jsonl \
   --num-gpus 1 \
   --beam-width 10
 
-python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
+python3 -m dianshi_retrosteplm.evaluation.eval_retro_beam_topk \
   results/test_2025_intermediate_label_beam10.jsonl \
   --ks 1 3 5 10 \
   --output-json results/test_2025_intermediate_label_beam10_metrics.json
@@ -161,7 +161,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 
 ## 多步路线规划
 
-每个框架都有自己的依赖、配置和 `.env`。[多步框架总览](multi_route/README.md)链接到各框架的完整说明。
+每个框架都有自己的依赖、配置和 `.env`。[多步框架总览](multi_step/README.md)链接到各框架的完整说明。
 
 ### 框架
 
@@ -169,9 +169,9 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 
 | 框架 | 搜索接口 | 安装与配置 |
 |---|---|---|
-| RetroAgent | Agent 调用由 HTTP 服务和 AND-OR `GraphMemory` 支撑的工具 | [RetroAgent 说明](multi_route/RetroAgent/README.md) |
-| Retro-R1-modified | 进程内 agent 用 `CALL` 请求候选、用 `SELECT` 应用其中一个 | [Retro-R1 说明](multi_route/Retro-R1-modified/README.md) |
-| DianShi-RetroPlanSystem-v0 | 调度器向 planner 提供合法的扩展选项并管理 AND-OR 树 | [DianShi-RetroPlanSystem-v0 说明](multi_route/DianShi-RetroPlanSystem-v0/README.md) |
+| RetroAgent | Agent 调用由 HTTP 服务和 AND-OR `GraphMemory` 支撑的工具 | [RetroAgent 说明](multi_step/RetroAgent/README.md) |
+| Retro-R1-modified | 进程内 agent 用 `CALL` 请求候选、用 `SELECT` 应用其中一个 | [Retro-R1 说明](multi_step/Retro-R1-modified/README.md) |
+| DianShi-RetroPlanSystem-v0 | 调度器向 planner 提供合法的扩展选项并管理 AND-OR 树 | [DianShi-RetroPlanSystem-v0 说明](multi_step/DianShi-RetroPlanSystem-v0/README.md) |
 
 ### 共同的规划流程
 
@@ -181,7 +181,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 4. 框架用规范化 SMILES 在标准化的 eMolecules SQLite 原料库中检查反应物是否可购。一个反应的所有反应物都已解决时该反应即解决；找到完整分解时分子即解决。
 5. 目标被解决或达到框架的搜索上限时停止。调用预算、轮数上限、深度上限和停止规则见各框架说明。
 
-模板门控的约定和参数见 [VALIDATE.md](multi_route/DianShi-RetroPlanSystem-v0/docs/VALIDATE.md)。
+模板门控的约定和参数见 [VALIDATE.md](multi_step/DianShi-RetroPlanSystem-v0/docs/VALIDATE.md)。
 
 ### 所需模型与运行资源
 
@@ -213,7 +213,7 @@ RetroAgent 用 `--targets` 选择目标；Retro-R1 的 runner 支持 `--targets`
 在 Python 3.11 及以上环境中，从仓库根目录运行：
 
 ~~~bash
-cd multi_route/DianShi-RetroPlanSystem-v0
+cd multi_step/DianShi-RetroPlanSystem-v0
 python3 -m pip install -r requirements.txt
 
 # 把运行资源下载到该框架目录。
@@ -253,7 +253,7 @@ RetroAgent 的 tool server 会从固定的相对路径加载原料库，首次�
 
 ~~~bash
 (
-  cd multi_route/RetroAgent
+  cd multi_step/RetroAgent
   mkdir -p dataset
   cp DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite dataset/
 )
@@ -261,7 +261,7 @@ RetroAgent 的 tool server 会从固定的相对路径加载原料库，首次�
 
 ~~~bash
 (
-  cd multi_route/RetroAgent
+  cd multi_step/RetroAgent
   PYTHON_BIN="$(command -v python3)" bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
     --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt
@@ -270,7 +270,7 @@ RetroAgent 的 tool server 会从固定的相对路径加载原料库，首次�
 
 ~~~bash
 (
-  cd multi_route/Retro-R1-modified
+  cd multi_step/Retro-R1-modified
   bash scripts/run_step_eval.sh \
     --config configs/dianshi_direct.yaml \
     --targets DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt \
@@ -289,25 +289,25 @@ Retro-R1 在配置的输出目录下写 `result.jsonl`。RetroAgent 在日志目
 在仓库根目录，用共享统计脚本计算 N = 50、100、200、300、400、500 时的求解率：
 
 ~~~bash
-python3 multi_route/tools/solved_by_n.py \
-  multi_route/DianShi-RetroPlanSystem-v0/results/bench/uspto_190/qwen_direct_rdchiral_aot.jsonl
+python3 multi_step/tools/solved_by_n.py \
+  multi_step/DianShi-RetroPlanSystem-v0/results/bench/uspto_190/qwen_direct_rdchiral_aot.jsonl
 
 # 同一脚本也接受 Retro-R1 的 JSONL 或 RetroAgent 的 summary.json。
-python3 multi_route/tools/solved_by_n.py /path/to/result.jsonl
-python3 multi_route/tools/solved_by_n.py /path/to/summary.json
+python3 multi_step/tools/solved_by_n.py /path/to/result.jsonl
+python3 multi_step/tools/solved_by_n.py /path/to/summary.json
 ~~~
 
 脚本会自动识别结果格式，并报告可能的基础设施故障。求解率基于所提供的记录计算；比较不同运行前，请确认目标集完整并处理已报告的故障。对于 RetroAgent 的 `summary.json`，脚本使用第一个实验。
 
 ## 📜 许可证
 
-整个仓库（包括 `multi_route/` 下的两个 fork）以 [Apache-2.0](LICENSE) 发布。
+整个仓库（包括 `multi_step/` 下的两个 fork）以 [Apache-2.0](LICENSE) 发布。
 
 `RetroAgent` 和 `Retro-R1-modified` 基于以 MIT 许可证发布的上游项目。按 MIT 的要求，
-上游的版权声明保留在 [`multi_route/RetroAgent/LICENSE`](multi_route/RetroAgent/LICENSE)
-（及 [`NOTICE`](multi_route/RetroAgent/NOTICE)）和
-[`multi_route/Retro-R1-modified/LICENSE`](multi_route/Retro-R1-modified/LICENSE) 中。
-`multi_route/Retro-R1-modified/packages/` 下内置的第三方包保留各自的许可证文件。
+上游的版权声明保留在 [`multi_step/RetroAgent/LICENSE`](multi_step/RetroAgent/LICENSE)
+（及 [`NOTICE`](multi_step/RetroAgent/NOTICE)）和
+[`multi_step/Retro-R1-modified/LICENSE`](multi_step/Retro-R1-modified/LICENSE) 中。
+`multi_step/Retro-R1-modified/packages/` 下内置的第三方包保留各自的许可证文件。
 
 模型权重以 Apache-2.0 发布，与其微调所基于的 Qwen3-4B-Base 一致。运行资源数据集中含有
 第三方数据（eMolecules 原料库，以及 USPTO-190 和 Pistachio Hard 评测集），这些数据沿用

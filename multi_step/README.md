@@ -1,6 +1,6 @@
-# Multi-route planning frameworks
+# Multi-step planning frameworks
 
-This folder hosts three independent multi-route retrosynthesis planning
+This folder hosts three independent multi-step retrosynthesis planning
 frameworks. All three drive the same search recipe: an LLM planner explores a
 tree or graph of molecules and reactions, proposes disconnections with the
 **DianShi-RetroStepLM-Direct single-step model** (the model released in this repository —

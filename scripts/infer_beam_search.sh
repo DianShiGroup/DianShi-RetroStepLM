@@ -94,10 +94,10 @@ echo "Model: $MODEL_PATH"
 echo "Dataset: $CACHED_DATA_PATH"
 echo "Results: $OUTPUT_PATH"
 
-"$PYTHON_BIN" -m dianshi_retrostep.inference.vllm_beamsearch_infer "${INFER_ARGS[@]}"
+"$PYTHON_BIN" -m dianshi_retrosteplm.inference.vllm_beamsearch_infer "${INFER_ARGS[@]}"
 
 echo
 echo "Beam search completed. Evaluating exact-match accuracy..."
 # EVAL_KS is intentionally split into separate integer arguments.
 # shellcheck disable=SC2086
-"$PYTHON_BIN" -m dianshi_retrostep.evaluation.eval_retro_beam_topk "$OUTPUT_PATH" --ks $EVAL_KS --output-json "$METRICS_PATH"
+"$PYTHON_BIN" -m dianshi_retrosteplm.evaluation.eval_retro_beam_topk "$OUTPUT_PATH" --ks $EVAL_KS --output-json "$METRICS_PATH"
