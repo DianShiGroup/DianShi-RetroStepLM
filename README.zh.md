@@ -46,6 +46,8 @@ DianShi-RetroStep/
   datasets/
     DianShi-PatentRxnStep-Dataset/
                                   Test-2001-2024、Test-2025、Val-2001-2024、Val-2025
+    DianShi-PatentRxnStep-LocalTemplates/
+                                  Train-Full 的 local 模板，及 seed 42/43/44 的模板划分
     USPTO-50K/                    原始 train、validation、test 划分
   multi_route/
     RetroAgent/                   带 AND-OR 图记忆的工具调用式 planner
@@ -87,6 +89,8 @@ python3 -m pip install -e .   # 可选：不经 shell 脚本直接运行模块
 
 - `datasets/DianShi-PatentRxnStep-Dataset`：四个评测分区。Test-2001-2024 与 Val-2001-2024（各 3,798 条反应）覆盖 2001–2024 年记录的反应；Test-2025 与 Val-2025（各 1,886 条反应）为时间外推集，全部为 2025 年记录的反应。
 - `datasets/USPTO-50K`：原始 train、validation、test 划分；构建时使用 validation 和 test。
+
+`datasets/DianShi-PatentRxnStep-LocalTemplates` 收录 Train-Full 的 local 模板（31,855 个），以及 seed 42、43、44 的模板覆盖划分：每个 seed 的模板受限训练集保留了哪些模板，以及每个测试集模板是保留（retained）还是剔除（withheld）。构建脚本不使用这些文件，说明见[该目录的 README](datasets/DianShi-PatentRxnStep-LocalTemplates/README.md)。
 
 构建在 CPU 上运行。`--datasets` 可取 `test_2001_2024`、`test_2025` 或 `uspto_50k`，每个都会构建其 test 与 validation 分区：
 
@@ -185,7 +189,7 @@ python3 -m dianshi_retrostep.evaluation.eval_retro_beam_topk \
 |---|---|
 | RetroStepLM-Direct 单步权重 | 在所选框架的 `.env` 中把 `SINGLE_STEP_MODEL_PATH` 设为 `DianShiGroup/DianShi-RetroStepLM-Direct` 或本地副本。 |
 | Planner 权重 | 把 `PLANNER_MODEL_PATH` 设为 `Qwen/Qwen3.5-397B-A17B-FP8` 或本地副本。vLLM 可在首次使用时下载。 |
-| rdchiral 模板库 | 把 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` 设为 `DianShi-RetroPlanSystem-Assets/rxn_template/rdchiral_res_rxn_temp_count.jsonl`。 |
+| rdchiral 模板库 | 把 `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` 设为 `DianShi-RetroPlanSystem-Assets/rdchiral_templates/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl`。 |
 | 可购买原料库 | 把 `STARTING_MOLECULES` 设为标准化的 eMolecules SQLite 文件（23,081,629 个可购买原料）；运行 Retro-R1 时需显式传 `--starting_molecules`。原料库来自 Retro* 的 eMolecules 可购买原料列表，用 RDKit 2025.9.5 标准化后转换为 SQLite。 |
 | 目标分子 | 每行一个目标 SMILES。评测目标路径见下文。 |
 | AOT* SCScore 权重 | 2048-bit gate checkpoint 已随每个框架的 gate 代码一起提供；1024-bit tool-server checkpoint 已 vendored 在 `RetroAgent/datasets/scscore/` 下，不需要额外下载或复制。 |

@@ -93,7 +93,7 @@ None of these are in the repository. Fill them in `.env`
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
 | Runtime assets | — | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Download to `DianShi-RetroPlanSystem-Assets/`; brings the template library, the building-block stock and the target sets. |
-| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
+| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rdchiral_templates/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
 | Building blocks | `STARTING_MOLECULES` | in the dataset: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. 23,081,629 molecules. The stock comes from the Retro* eMolecules building-block list, standardized with RDKit 2025.9.5, and then converted to SQLite. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |
 | Step-model weights | `SINGLE_STEP_MODEL_PATH` | [DianShiGroup/DianShi-RetroStepLM-Direct](https://huggingface.co/DianShiGroup/DianShi-RetroStepLM-Direct) | Served separately from the planner. |
@@ -121,7 +121,7 @@ pip install -r requirements.txt
 # 1. download the runtime assets (from the repo root) and fill .env
 hf download DianShiGroup/DianShi-RetroPlanSystem-Assets --repo-type dataset --local-dir DianShi-RetroPlanSystem-Assets
 cp .env.example .env && $EDITOR .env
-#    DIANSHI_RDCHIRAL_TEMPLATE_JSONL=$PWD/DianShi-RetroPlanSystem-Assets/rxn_template/rdchiral_res_rxn_temp_count.jsonl
+#    DIANSHI_RDCHIRAL_TEMPLATE_JSONL=$PWD/DianShi-RetroPlanSystem-Assets/rdchiral_templates/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl
 #    STARTING_MOLECULES=$PWD/DianShi-RetroPlanSystem-Assets/stock/emolecules_standardized.sqlite
 #    TARGETS_FILE=$PWD/DianShi-RetroPlanSystem-Assets/test_dataset/uspto_190_targets_smiles.txt
 

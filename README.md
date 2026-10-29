@@ -46,6 +46,8 @@ DianShi-RetroStep/
   datasets/
     DianShi-PatentRxnStep-Dataset/
                                   Test-2001-2024, Test-2025, Val-2001-2024, Val-2025
+    DianShi-PatentRxnStep-LocalTemplates/
+                                  Train-Full local templates and seed 42/43/44 template partitions
     USPTO-50K/                    Raw train, validation, and test splits
   multi_route/
     RetroAgent/                   Tool-calling planner with AND-OR graph memory
@@ -87,6 +89,8 @@ Source data and the prompt template are included in the repository:
 
 - `datasets/DianShi-PatentRxnStep-Dataset`: four evaluation partitions. Test-2001-2024 and Val-2001-2024 (3,798 reactions each) cover reactions recorded in 2001–2024; Test-2025 and Val-2025 (1,886 reactions each) are temporally held out, with every reaction recorded in 2025.
 - `datasets/USPTO-50K`: raw train, validation, and test splits; the builder uses validation and test.
+
+`datasets/DianShi-PatentRxnStep-LocalTemplates` holds the local templates of Train-Full (31,855) and, for seeds 42, 43 and 44, the template-coverage partitions: the templates kept in each template-restricted training set and the retained / withheld status of every test-set template. The builder does not use these files; see the [folder README](datasets/DianShi-PatentRxnStep-LocalTemplates/README.md).
 
 Building runs on CPU. Pass `test_2001_2024`, `test_2025` or `uspto_50k` to `--datasets`; each builds its test and validation partitions:
 
@@ -185,7 +189,7 @@ For the template-gate contract and parameters, see [VALIDATE.md](multi_route/Dia
 |---|---|
 | RetroStepLM-Direct single-step weights | Set `SINGLE_STEP_MODEL_PATH` in the selected framework's `.env` to `DianShiGroup/DianShi-RetroStepLM-Direct` or a local copy. |
 | Planner weights | Set `PLANNER_MODEL_PATH` to `Qwen/Qwen3.5-397B-A17B-FP8` or a local copy. vLLM can download the Hugging Face model on first use. |
-| rdchiral template library | Set `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` to `DianShi-RetroPlanSystem-Assets/rxn_template/rdchiral_res_rxn_temp_count.jsonl`. |
+| rdchiral template library | Set `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` to `DianShi-RetroPlanSystem-Assets/rdchiral_templates/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl`. |
 | Purchasable building-block stock | Set `STARTING_MOLECULES` to the standardized eMolecules SQLite file (23,081,629 building blocks); pass `--starting_molecules` explicitly when running Retro-R1. The stock comes from the Retro* eMolecules building-block list, standardized with RDKit 2025.9.5, and then converted to SQLite. |
 | Target molecules | Provide one target SMILES per line. The benchmark target paths are listed below. |
 | AOT* SCScore weights | The 2048-bit gate checkpoint is included with each framework's gate assets. The 1024-bit tool-server checkpoint is vendored under `RetroAgent/datasets/scscore/`. Neither needs an extra download or copy. |

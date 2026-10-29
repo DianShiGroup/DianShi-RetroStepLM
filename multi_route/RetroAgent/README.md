@@ -87,7 +87,7 @@ SCScore checkpoints are vendored as noted below.
 | Asset | Variable | Get it from | Notes |
 |---|---|---|---|
 | Runtime assets | — | [DianShiGroup/DianShi-RetroPlanSystem-Assets](https://huggingface.co/datasets/DianShiGroup/DianShi-RetroPlanSystem-Assets) | Download to `DianShi-RetroPlanSystem-Assets/`; brings the template library, the building-block stock and the target sets. Place the files as described in its `README.md`. |
-| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rxn_template/rdchiral_res_rxn_temp_count.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
+| rdchiral template library | `DIANSHI_RDCHIRAL_TEMPLATE_JSONL` | in the dataset: `rdchiral_templates/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl` | One template per line. **Required** — the shipped config has the gate on. |
 | Building blocks | `STARTING_MOLECULES` | in the dataset: `stock/emolecules_standardized.sqlite` | Required — the gate asks whether each reactant is purchasable. 23,081,629 molecules. The stock comes from the Retro* eMolecules building-block list, standardized with RDKit 2025.9.5, and then converted to SQLite. |
 | SCScore (tool server, 1024-bit) | — | vendored at `datasets/scscore/model.ckpt-10654.as_numpy.json.gz` | Loaded by `calculate_scscore`; no download. |
 | Planner weights | `PLANNER_MODEL_PATH` | [Qwen/Qwen3.5-397B-A17B-FP8](https://huggingface.co/Qwen/Qwen3.5-397B-A17B-FP8) | The policy LLM. Set `PLANNER_MODEL_PATH` to this repo ID; vLLM downloads it on first serve, or pre-download with `huggingface-cli download`. |

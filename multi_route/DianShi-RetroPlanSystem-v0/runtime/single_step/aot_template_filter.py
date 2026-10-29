@@ -24,7 +24,7 @@ from .smiles_canonical import canonicalize_reactants, canonicalize_smiles_clear_
 logger = logging.getLogger(__name__)
 RDLogger.DisableLog("rdApp.*")
 
-_DIANSHI_RDCHIRAL_JSONL = "/path/to/rdchiral_res_rxn_temp_count.jsonl"
+_DIANSHI_RDCHIRAL_JSONL = "/path/to/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl"
 _SQLITE_SUFFIXES = {".sqlite", ".sqlite3", ".db"}
 
 
