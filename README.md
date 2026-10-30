@@ -48,7 +48,7 @@ DianShi-RetroStepLM/
                                   Test-2001-2024, Test-2025, Val-2001-2024, Val-2025
     DianShi-PatentRxnStep-LocalTemplates/
                                   Train-Full local templates and seed 42/43/44 template partitions
-    USPTO-50K/                    Raw train, validation, and test splits
+    USPTO-50K/                    USPTO_50K_Train, USPTO_50K_Val, USPTO_50K_Test
   multi_step/
     RetroAgent/                   Tool-calling planner with AND-OR graph memory
     Retro-R1-modified/            CALL / SELECT planning environment
@@ -88,7 +88,7 @@ This environment covers the single-step pipeline only. Multi-step frameworks hav
 Source data and the prompt template are included in the repository:
 
 - `datasets/DianShi-PatentRxnStep-Dataset`: four evaluation partitions. Test-2001-2024 and Val-2001-2024 (3,798 reactions each) cover reactions recorded in 2001–2024; Test-2025 and Val-2025 (1,886 reactions each) are temporally held out, with every reaction recorded in 2025.
-- `datasets/USPTO-50K`: raw train, validation, and test splits; the builder uses validation and test.
+- `datasets/USPTO-50K`: the train, validation, and test splits (`USPTO_50K_Train`, `USPTO_50K_Val`, `USPTO_50K_Test`); the builder uses validation and test.
 
 `datasets/DianShi-PatentRxnStep-LocalTemplates` holds the local templates of Train-Full (31,855) and, for seeds 42, 43 and 44, the template-coverage partitions: the templates kept in each template-restricted training set and the retained / withheld status of every test-set template. The builder does not use these files; see the [folder README](datasets/DianShi-PatentRxnStep-LocalTemplates/README.md).
 

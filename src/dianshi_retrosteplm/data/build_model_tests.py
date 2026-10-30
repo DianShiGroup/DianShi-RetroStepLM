@@ -31,8 +31,8 @@ SOURCE_SPECS = (
     ("test_2001_2024", "val", PATENT_DIR / "DianShi-PatentRxnStep-Val-2001-2024.jsonl"),
     ("test_2025", "test", PATENT_DIR / "DianShi-PatentRxnStep-Test-2025.jsonl"),
     ("test_2025", "val", PATENT_DIR / "DianShi-PatentRxnStep-Val-2025.jsonl"),
-    ("uspto_50k", "test", ROOT / "datasets/USPTO-50K/raw_test.jsonl"),
-    ("uspto_50k", "val", ROOT / "datasets/USPTO-50K/raw_val.jsonl"),
+    ("uspto_50k", "test", ROOT / "datasets/USPTO-50K/USPTO_50K_Test.jsonl"),
+    ("uspto_50k", "val", ROOT / "datasets/USPTO-50K/USPTO_50K_Val.jsonl"),
 )
 
 PROMPTS = {

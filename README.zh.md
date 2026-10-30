@@ -48,7 +48,7 @@ DianShi-RetroStepLM/
                                   Test-2001-2024、Test-2025、Val-2001-2024、Val-2025
     DianShi-PatentRxnStep-LocalTemplates/
                                   Train-Full 的 local 模板，及 seed 42/43/44 的模板划分
-    USPTO-50K/                    原始 train、validation、test 划分
+    USPTO-50K/                    USPTO_50K_Train、USPTO_50K_Val、USPTO_50K_Test
   multi_step/
     RetroAgent/                   带 AND-OR 图记忆的工具调用式 planner
     Retro-R1-modified/            CALL / SELECT 规划环境
@@ -88,7 +88,7 @@ python3 -m pip install -e .   # 可选：不经 shell 脚本直接运行模块
 源数据和提示词模板已包含在仓库中：
 
 - `datasets/DianShi-PatentRxnStep-Dataset`：四个评测分区。Test-2001-2024 与 Val-2001-2024（各 3,798 条反应）覆盖 2001–2024 年记录的反应；Test-2025 与 Val-2025（各 1,886 条反应）为时间外推集，全部为 2025 年记录的反应。
-- `datasets/USPTO-50K`：原始 train、validation、test 划分；构建时使用 validation 和 test。
+- `datasets/USPTO-50K`：train、validation、test 三个划分（`USPTO_50K_Train`、`USPTO_50K_Val`、`USPTO_50K_Test`）；构建时使用 validation 和 test。
 
 `datasets/DianShi-PatentRxnStep-LocalTemplates` 收录 Train-Full 的 local 模板（31,855 个），以及 seed 42、43、44 的模板覆盖划分：每个 seed 的模板受限训练集保留了哪些模板，以及每个测试集模板是保留（retained）还是剔除（withheld）。构建脚本不使用这些文件，说明见[该目录的 README](datasets/DianShi-PatentRxnStep-LocalTemplates/README.md)。
 
