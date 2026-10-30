@@ -8,36 +8,32 @@ experiments with seeds 42, 43 and 44.
 
 | File | Rows | Content |
 |---|---:|---|
-| `DianShi-PatentRxnStep-Train-Full_local_templates.jsonl` | 31,855 | Every local template in Train-Full and its reaction count (sums to 2,712,259) |
-| `DianShi-PatentRxnStep-Train-TemplateRestricted-S42_local_templates.jsonl` | 30,935 | Templates kept in the seed-42 training set, with reaction counts (sums to 1,804,926) |
-| `DianShi-PatentRxnStep-Train-TemplateRestricted-S43_local_templates.jsonl` | 30,935 | Same for seed 43 (sums to 1,673,416) |
-| `DianShi-PatentRxnStep-Train-TemplateRestricted-S44_local_templates.jsonl` | 30,935 | Same for seed 44 (sums to 1,564,454) |
+| `DianShi-PatentRxnStep-Train-Full_local_templates.jsonl` | 31,855 | Every local template in Train-Full |
+| `DianShi-PatentRxnStep-Train-TemplateRestricted-S42_local_templates.jsonl` | 30,935 | Templates kept in the seed-42 training set |
+| `DianShi-PatentRxnStep-Train-TemplateRestricted-S43_local_templates.jsonl` | 30,935 | Same for seed 43 |
+| `DianShi-PatentRxnStep-Train-TemplateRestricted-S44_local_templates.jsonl` | 30,935 | Same for seed 44 |
 | `DianShi-PatentRxnStep-Test-TemplatePartition-S42_local_templates.jsonl` | 1,841 | Templates of the two test sets, each marked `retained` or `withheld` for seed 42 |
 | `DianShi-PatentRxnStep-Test-TemplatePartition-S43_local_templates.jsonl` | 1,841 | Same for seed 43 |
 | `DianShi-PatentRxnStep-Test-TemplatePartition-S44_local_templates.jsonl` | 1,841 | Same for seed 44 |
 
 ## Formats
 
-Training libraries use the same format as the rdchiral library in
-`DianShi-RetroPlanSystem-Assets`
-(`rdchiral_templates/DianShi-PatentRxnStep-Train-Full_rdchiral_templates.jsonl`):
+One template per line. Training libraries:
 
 ```json
-{"key": "<local template>", "value": <number of training reactions>}
+{"local_template": "<local template>"}
 ```
 
 Test partitions:
 
 ```json
-{"key": "<local template>", "status": "retained" | "withheld",
- "test_2001_2024_reactions": <n>, "test_2025_reactions": <n>,
- "train_full_reactions": <n>}
+{"local_template": "<local template>", "status": "retained" | "withheld"}
 ```
 
-`test_2001_2024_reactions` and `test_2025_reactions` count the reactions with
-that template in Test-2001-2024 and Test-2025
-(`../DianShi-PatentRxnStep-Dataset/`). A template can occur in one test set or
-in both. Each test reaction's template is its `localtemp_res.rxn_temp` field.
+The test partitions list the templates of Test-2001-2024 and Test-2025
+together (`../DianShi-PatentRxnStep-Dataset/`); a template can occur in one test
+set or in both. A test reaction's template is its `localtemp_res.rxn_temp`
+field, so a reaction is retained or withheld by looking that field up here.
 
 ## How the partition works
 
@@ -47,9 +43,12 @@ template shared by both test sets gets one decision. Every training reaction
 with a withheld template is removed from Train-Full; the rest form that seed's
 `TemplateRestricted` training set. So:
 
-- every `withheld` template has 0 reactions in that seed's training library;
-- every `retained` template keeps all of its Train-Full reactions;
+- no `withheld` template appears in that seed's training library;
+- every `retained` template does, with all of its Train-Full reactions kept;
 - the 30,014 Train-Full templates that occur in neither test set are always kept.
+
+Train-Full has 2,712,259 reactions. The template-restricted training sets keep
+1,804,926 (seed 42), 1,673,416 (seed 43) and 1,564,454 (seed 44).
 
 Test reactions per subset (retained / withheld):
 
