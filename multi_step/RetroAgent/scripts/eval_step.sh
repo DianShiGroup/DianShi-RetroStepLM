@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-PYTHON_BIN="${PROJECT_DIR}/.venv/bin/python"
+PYTHON_BIN="${PYTHON_BIN:-$(command -v python3 || true)}"
 
 INPUT_FILE="${INPUT_FILE:?Set INPUT_FILE to a one-SMILES-per-line text file}"
 PLANNER_URL="${PLANNER_URL:?Set PLANNER_URL to the planner OpenAI base URL, e.g. http://host:port/v1}"

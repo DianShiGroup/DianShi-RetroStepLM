@@ -10,11 +10,8 @@ from typing import Any, Dict, List
 
 from rdkit import Chem, RDConfig
 
-if sys.platform == "darwin":
-    sys.path.append(os.path.join(RDConfig.RDContribDir, "SA_Score"))
-    import sascorer
-else:
-    from rdkit.Contrib.SA_Score import sascorer
+sys.path.append(os.path.join(RDConfig.RDContribDir, "SA_Score"))
+import sascorer
 
 from tools.scscore import SCScorer
 

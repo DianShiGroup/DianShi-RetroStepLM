@@ -27,7 +27,7 @@ PROJECT_DIR="$(cd -- "${SCRIPT_DIR}/.." &>/dev/null && pwd)"
 # shellcheck disable=SC1091
 [[ -f "${PROJECT_DIR}/.env" ]] && set -a && . "${PROJECT_DIR}/.env" && set +a
 
-PYTHON_BIN="${PYTHON_BIN:-${PROJECT_DIR}/.venv/bin/python}"
+PYTHON_BIN="${PYTHON_BIN:-$(command -v python3 || true)}"
 CONFIG=""
 TARGETS="${TARGETS:-}"
 OUT_DIR=""

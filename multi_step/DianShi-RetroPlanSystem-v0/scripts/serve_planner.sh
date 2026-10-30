@@ -50,7 +50,8 @@ mkdir -p "${LOG_DIR}"
 
 echo ">>> Serving ${MODEL_PATH}"
 echo ">>> registered as: ${SERVED_NAME}"
-# Point configs/planner.yaml at this; it reads $PLANNER_BASE_URL / $PLANNER_MODEL_NAME.
+# The evaluation YAMLs in configs/bench/ read $PLANNER_BASE_URL and
+# $PLANNER_MODEL_NAME from .env.
 echo ">>> endpoint: http://127.0.0.1:${PORT}/v1  (model ${SERVED_NAME})"
 echo ">>>   name=${SERVED_NAME} port=${PORT} tp=${TP} max_model_len=${MAX_MODEL_LEN}"
 echo ">>> Log: ${LOG_DIR}/planner-${PORT}.log"

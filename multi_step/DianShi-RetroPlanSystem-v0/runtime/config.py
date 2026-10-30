@@ -65,6 +65,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
         single_step_retro = single_step.get("retro")
         if isinstance(single_step_retro, dict):
             single_step_retro["api_url"] = _resolve_env_list(single_step_retro.get("api_url"))
+            single_step_retro["model"] = _resolve_env_value(single_step_retro.get("model"))
         template_filter = single_step.get("template_filter")
         if isinstance(template_filter, dict):
             template_filter["template_path"] = _resolve_env_value(
@@ -83,5 +84,8 @@ def load_config(config_path: str) -> Dict[str, Any]:
                         if isinstance(model_cfg, dict):
                             for key in ["api_key", "base_url"]:
                                 model_cfg[key] = _resolve_env_value(model_cfg.get(key))
+                            model_cfg["model_name"] = _resolve_env_value(
+                                model_cfg.get("model_name")
+                            )
 
     return config

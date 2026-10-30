@@ -44,7 +44,8 @@ mkdir -p "${LOG_DIR}"
 
 echo ">>> Serving ${MODEL_PATH}"
 echo ">>> registered as: ${SERVED_NAME}"
-# Point the config at this; it reads $SINGLE_STEP_BASE_URL / $SINGLE_STEP_MODEL.
+# The evaluation YAMLs in configs/bench/ read $SINGLE_STEP_API_URL and
+# $SINGLE_STEP_MODEL from .env.
 echo ">>> endpoint: http://127.0.0.1:${PORT}/v1  (model ${SERVED_NAME})"
 echo ">>>   name=${SERVED_NAME} port=${PORT} tp=${TP} max_model_len=${MAX_MODEL_LEN}"
 

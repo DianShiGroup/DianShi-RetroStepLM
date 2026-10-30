@@ -28,7 +28,7 @@ llm_config:
       timeout: 300
       llms:
         qwen3.5-397b:
-          model_name: "qwen3.5-397b"
+          model_name: "${PLANNER_MODEL_NAME:-qwen3.5-397b}"
 
 single_step:
   rag_enabled: false  # ChemRAG retrieval is not part of this release
@@ -55,5 +55,5 @@ single_step:
   retro:
     backend: "dianshi"
     api_url: "${SINGLE_STEP_API_URL:-http://127.0.0.1:8001/v1/chat/completions}"
-    model: "qwen3-4b"
+    model: "${SINGLE_STEP_MODEL:-qwen3-4b}"
     num_res: 10
