@@ -1,0 +1,50 @@
+# Python bytecode/cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite3
+.codegraph
+.temp
+*.jsonl
+# Build/test tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE/editor
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs/runtime artifacts
+*.log
+logs/
+
+# Project outputs
+results/
+runs/
+
+# Large or local-only datasets
+data
+dataset/
+
+# Optional local configs/secrets
+.env
+.env.*
+!.env.example
+*.secret
+.opencode
+
+# Files moved aside rather than deleted; never published.
+.trash/

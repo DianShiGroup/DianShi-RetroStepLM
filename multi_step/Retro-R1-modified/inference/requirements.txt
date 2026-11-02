@@ -1,0 +1,14 @@
+# Dependencies for API-driven inference.
+openai>=1.0.0
+requests>=2.28.0
+pyyaml>=6.0
+pandas>=1.5.0
+pyarrow>=10.0.0
+numpy>=1.21.0
+rdkit==2025.9.5
+rdchiral>=1.1.0
+rxnmapper>=0.3.0
+
+# Serving the planner and the step model is done with vLLM (>= 0.18; we
+# validated 0.26) on the GPU machine -- install it there, not in this env;
+# scripts/serve_*.sh only need `vllm` on PATH.

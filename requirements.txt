@@ -1,0 +1,15 @@
+# The single-step pipeline. Matches the pins in pyproject.toml.
+#
+# The released numbers were produced with the CUDA 12.8 build of torch
+# (2.9.1+cu128). The plain pin below resolves from PyPI; to reproduce that exact
+# build, install torch first from the cu128 index:
+#
+#     pip install torch==2.9.1 --index-url https://download.pytorch.org/whl/cu128
+#     pip install -r requirements.txt
+datasets==3.6.0
+numpy==1.26.4
+ray==2.54.0
+rdkit==2025.9.5
+torch==2.9.1
+tqdm==4.67.3
+vllm==0.16.0

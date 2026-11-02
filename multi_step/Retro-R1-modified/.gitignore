@@ -1,0 +1,117 @@
+# data
+data/
+dataset/
+one_step_model/
+archive/
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.whl
+.installed.cfg
+MANIFEST
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Testing / coverage
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# PyCharm / IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Model checkpoints and large binary files
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.h5
+*.hdf5
+
+# Dataset files
+data/
+*.parquet
+*.pkl
+*.csv
+
+# Results and logs
+results/
+*.log
+*.json
+
+# Experiment / training outputs
+outputs/
+runs/
+wandb/
+mlruns/
+*.zip
+
+# API keys / secrets
+.env*
+secrets.json
+credentials.json
+
+# Misc
+*.bak
+*.tmp
+
+# Internal benchmark assets: cluster submission scripts, per-lane configs and
+# the service/env files that name our own endpoints. .env.example is the
+# tracked template; .env itself holds the real values.
+configs/bench/
+scripts/bench/
+.trash/
+
+# Keep the environment template even though .env* is ignored above.
+!.env.example
+# vendored upstream deps: their disabled git metadata is not part of the release
+packages/*/.git_disabled/

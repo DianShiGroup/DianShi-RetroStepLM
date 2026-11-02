@@ -1,0 +1,31 @@
+RetroAgent
+Copyright (c) 2026 The RetroAgent Authors
+
+This product includes third-party software.
+
+--------------------------------------------------------------------------------
+external/desp/
+--------------------------------------------------------------------------------
+The single-step retrosynthesis inference code under external/desp/ is adapted
+from DESP (Double-Ended Synthesis Planning):
+
+    Yu et al., "Double-Ended Synthesis Planning with Goal-Constrained
+    Bidirectional Search," NeurIPS 2024.
+    https://github.com/coleygroup/desp
+
+The template-based MLP single-step model weights (datasets/model_retro.pt) and
+reaction templates originate from Retro* (Chen et al., ICML 2020) and are
+distributed through the DESP release. These weights are downloaded separately
+(see slime_retro/scripts/setup.sh) and are not redistributed in this repository.
+
+    Chen et al., "Retro*: Learning Retrosynthetic Planning with Neural Guided
+    A* Search," ICML 2020.
+
+--------------------------------------------------------------------------------
+external/slime/
+--------------------------------------------------------------------------------
+Training uses the slime framework, cloned separately during setup:
+
+    https://github.com/THUDM/slime
+
+Please refer to the respective upstream repositories for their license terms.
